@@ -29,7 +29,6 @@ class SINumber():
     Slightly alters the exact method depending on whether the other side is a
     unit number or some other number.
     """
-
     @functools.wraps(func)
     def wrapper(self, other=None):
       if other is None:
@@ -39,7 +38,6 @@ class SINumber():
       else:
         return func(self, other)
     return wrapper
-
 
   def __init__(self, units: Union[str, int, float], baseSymbol: str):
     self.baseSymbol = baseSymbol
@@ -62,10 +60,8 @@ class SINumber():
     elif isinstance(units, (int, float)):
       self.value = units
 
-
   def __repr__(self):
     return f'{self.__class__.__name__}({self.value!r})'
-
 
   def __str__(self):
     # Adapted from https://stackoverflow.com/a/29749228/1208424
@@ -79,79 +75,64 @@ class SINumber():
 
     return f"{reduced:.4} {' kMGT'[d] if d > 0 else ''}{self.baseSymbol}"
 
-
   @_unitOrNumber
   def __eq__(self, other) -> bool:
     return self.value == other
 
-
   def __bool__(self) -> bool:
     return bool(self.value)
-
 
   @_unitOrNumber
   def __add__(self, other):
     return self.__class__(self.value + other)
   __radd__ = __add__
 
-
   @_unitOrNumber
   def __sub__(self, other):
     return self.__class__(self.value - other)
 
-
   @_unitOrNumber
   def __rsub__(self, other):
     return self.__class__(other - self.value)
-
 
   @_unitOrNumber
   def __mul__(self, other):
     return self.__class__(self.value * other)
   __rmul__ = __mul__
 
-
   @_unitOrNumber
   def __truediv__(self, other):
     return self.__class__(self.value / other)
-
 
   @_unitOrNumber
   def __rtruediv__(self, other):
     return self.__class__(other / self.value)
 
-
   @_unitOrNumber
   def __floordiv__(self, other):
     return self.__class__(self.value // other)
-
 
   @_unitOrNumber
   def __rfloordiv__(self, other):
     return self.__class__(other // self.value)
 
-
   @_unitOrNumber
   def __mod__(self, other):
     return self.__class__(self.value % other)
 
-
   @_unitOrNumber
   def __rmod__(self, other):
     return self.__class__(other % self.value)
-
 
   @_unitOrNumber
   def __divmod__(self, other):
     cl = self.__class__
     return cl(self.value / other), cl(self.value % other)
 
-
   @_unitOrNumber
   def __rdivmod__(self, other):
     cl = self.__class__
     return cl(other / self.value), cl(other % self.value)
-
 
   @_unitOrNumber
   def __pow__(self, other, modulo=None):
@@ -160,7 +141,6 @@ class SINumber():
     else:
       return self.__class__(pow(self.value, other, modulo))
 
-
   @_unitOrNumber
   def __rpow__(self, other, modulo=None):
     if modulo is None:
@@ -168,42 +148,35 @@ class SINumber():
     else:
       return self.__class__(pow(other, self.value, modulo))
 
-
   @_unitOrNumber
   def __iadd__(self, other):
     self.value += other
     return self.value
-
 
   @_unitOrNumber
   def __isub__(self, other):
     self.value -= other
     return self.value
 
-
   @_unitOrNumber
   def __imul__(self, other):
     self.value *= other
     return self.value
-
 
   @_unitOrNumber
   def __itruediv__(self, other):
     self.value /= other
     return self.value
 
-
   @_unitOrNumber
   def __ifloordiv__(self, other):
     self.value //= other
     return self.value
 
-
   @_unitOrNumber
   def __imod__(self, other):
     self.value %= other
     return self.value
-
 
   @_unitOrNumber
   def __ipow__(self, other, modulo=None):
@@ -213,22 +186,17 @@ class SINumber():
       self.value = pow(self.value, other, modulo)
     return self.value
 
-
   def __neg__(self):
     return self.__class__(-self.value)
-
 
   def __abs__(self):
     return self.__class__(abs(self.value))
 
-
   def __int__(self):
     return int(self.value)
 
-
   def __float__(self):
     return float(self.value)
-
 
   _unitOrNumber = staticmethod(_unitOrNumber)
 

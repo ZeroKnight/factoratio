@@ -20,10 +20,8 @@ class Ingredient():
     self.item = item
     self.count = count
 
-
   def __repr__(self):
     return f'{self.__class__.__name__}({self.item!r}, {self.count!r})'
-
 
   def __str__(self):
     return f'{self.count}x {self.item.name}'
@@ -51,30 +49,25 @@ class Recipe():
     self.input = input_
     self.output = output
 
-
   def __repr__(self):
     return (f'{self.__class__.__name__}({self.time!r}, {self.input!r}, '
             f'{self.output!r})')
-
 
   def getInputByName(self, name: str) -> Ingredient:
     """Get an input ingredient by its name.
 
     Returns None if the item could not be found by the given name.
     """
-
     for ingredient in self.input:
       if ingredient.item.name == name:
         return ingredient
     return None
-
 
   def getOutputByName(self, name: str) -> Ingredient:
     """Get an output ingredient by its name.
 
     Returns None if the item could not be found by the given name.
     """
-
     for ingredient in self.output:
       if ingredient.item.name == name:
         return ingredient

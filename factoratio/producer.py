@@ -45,12 +45,10 @@ class Module():
     self.productivity = productivity
     self.pollution = pollution
 
-
   def __repr__(self):
     return f'{__class__.__name__}({self.name!r}, {self.tier!r}, ' \
            f'{self.energy!r}, {self.speed!r}, {self.productivity!r}, ' \
            f'{self.pollution!r})'
-
 
   def __str__(self):
       return f'Tier {self.tier} {self.name} Module'
@@ -95,40 +93,29 @@ class Producer():
     self.drain = drain
     self.pollution = pollution
 
-
   def _getMultiplier(self, category: str) -> float:
     """Return the multiplier of the given category from module effects."""
-
     multiplier = 1
     for m in self.modules:
       if isinstance(m, Module):
         multiplier += m.__dict__[category]
     return multiplier
 
-
   def speedMultiplier(self) -> float:
     """Return the producer's crafting speed multiplier."""
-
     return self._getMultiplier('speed')
-
 
   def energyMultiplier(self) -> Watt:
     """Return the producer's energy usage multiplier."""
-
     return self._getMultiplier('energy')
-
 
   def productivityMultiplier(self) -> float:
     """Return the producer's added productivity multiplier."""
-
     return self._getMultiplier('productivity')
-
 
   def pollutionMultiplier(self) -> float:
     """Return the producer's pollution multiplier."""
-
     return self._getMultiplier('pollution')
-
 
   def craft(self, recipe: Recipe) -> dict:
     """Crafts the given input recipe with the producer's current stats.
@@ -141,9 +128,7 @@ class Producer():
     recipe: Recipe
         The recipe to craft.
     """
-
     craftTime = recipe.time / self.craftSpeed * self.speedMultiplier()
-
     energyMult = self.energyMultiplier()
     # TODO: check to see if drain is also modified
     energyConsumed = (self.energyUsage + self.drain) * energyMult * craftTime
@@ -151,7 +136,6 @@ class Producer():
 
     return {'duration': craftTime, 'output': recipe.output,
             'energy': energyConsumed, 'pollution': pollutionCreated}
-
 
   def productionRate(self, recipe: Recipe, item: str, count: int=1) -> float:
     """Return the rate that an item is produced, in items per second.
@@ -168,9 +152,7 @@ class Producer():
         The number of identical producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
-
     return count * recipe.output[item] / self.craft(recipe)['duration']
-
 
   def productionRateInverse(self, recipe: Recipe, item: str,
                             ips: float) -> float:
@@ -187,9 +169,7 @@ class Producer():
     ips: float
         The target production rate to meet.
     """
-
     return ips * self.craft(recipe)['duration'] / recipe.output[item]
-
 
   def consumptionRate(self, recipe: Recipe, item: str, count: int=1) -> float:
     """Return the rate that an item is consumed, in items per second.
@@ -206,9 +186,7 @@ class Producer():
         The number of identical producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
-
     return count * recipe.input[item] / self.craft(recipe)['duration']
-
 
   def consumptionRateInverse(self, recipe: Recipe, item: str,
                             ips: float) -> float:
@@ -225,9 +203,7 @@ class Producer():
     ips: float
         The target consumption rate to meet.
     """
-
     return ips * self.craft(recipe)['duration'] / recipe.input[item]
-
 
   def rates(self, recipe: Recipe, count: int=1) -> dict:
     """Calculate all rates for this producer.
@@ -245,10 +221,8 @@ class Producer():
         The number of identical producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
-
     craftResult = self.craft(recipe)
     duration = craftResult['duration']
-
     consumed, produced = [], []
     for ingredient in recipe.input:
       name = ingredient.item.name
@@ -289,11 +263,9 @@ class BurnerProducer(Producer, Burner):
         The number of identical producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
-
     rateDict = super().rates(recipe, count)
     rateDict['fuel'] = rateDict['energy'] / fuel.energy.value
     return rateDict
-
 
   def productsPerFuel(self, recipe: Recipe, item: str, fuel: Fuel,
                       count: int=1) -> float:
@@ -313,7 +285,6 @@ class BurnerProducer(Producer, Burner):
     count: int, optional
         The number of furnaces running concurrently. Defaults to one.
     """
-
     return (fuel.burnTime(self.energyConsumption)
             / self.productionRate(recipe, item, count))
 
@@ -329,7 +300,6 @@ class MiningDrill(Producer):
     if name in ['consumptionRate', 'consumptionRateInverse']:
       raise AttributeError
     return super().__getattribute__(name)
-
 
   def rates(self, recipe: Recipe, count: int=1):
     # TODO: consumption is n/a
