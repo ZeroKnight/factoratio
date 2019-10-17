@@ -270,7 +270,7 @@ class BurnerProducer(Producer, Burner):
         The number of identical producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
-    rateDict = super().rates(recipe, count)
+    rateDict = super().__name__(recipe, count)
     rateDict['fuel'] = rateDict['energy'] / fuel.energy.value
     return rateDict
 
