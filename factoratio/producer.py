@@ -301,13 +301,146 @@ class MiningDrill(Producer):
 
   A mining drill is a Producer that consumes energy to extract a resource
   from the ground it is placed on.
+
+  Most methods inherited from Producer have had their behavior slightly
+  modified to suit the more basic nature of vanilla Factorio mining recipes.
+  See also: Recipe.miningRecipe.
   """
 
-  def __getattribute__(self, name):
-    if name in ['consumptionRate', 'consumptionRateInverse']:
-      raise AttributeError
-    return super().__getattribute__(name)
+  def productionRate(self, recipe: Recipe, itemName: str=None,
+                     count: int=1) -> float:
+    """Return the rate that an item is produced, in items per second.
 
-  def rates(self, recipe: Recipe, count: int=1):
-    # TODO: consumption is n/a
-    pass
+    Typically Recipe.miningRecipe is used to construct the Recipe object, but
+    this is not a hard requirement.
+
+    Parameters
+    ----------
+    recipe: Recipe
+        The recipe to examine.
+
+    itemName: str, optional
+        The specific recipe product to obtain the production rate for. If
+        unspecified, assumes the output item as long as it's the only
+        product.
+
+    count: int, optional
+        The number of identical producers concurrently crafting this recipe;
+        acts as a multiplier. Defaults to one.
+    """
+    if itemName is None:
+      if len(recipe.output) == 1:
+        itemName = recipe.output[0].item.name
+      else:
+        raise ValueError('Cannot use default itemName value when output '
+                         'contains more than one product.')
+    return super().__name__(recipe, itemName, count)
+
+  def productionRateInverse(self, recipe: Recipe, itemName: str=None,
+                            ips: float=1.0) -> float:
+    """Return the number of these producers needed to reach the given rate.
+
+    Parameters
+    ----------
+    recipe: Recipe
+        The recipe to examine.
+
+    itemName: str
+        The specific recipe product being produced. If unspecified, assumes
+        the output item as long as it's the only product.
+
+    ips: float, optional
+        The target production rate to meet. Defaults to one item per second.
+    """
+    if itemName is None:
+      if len(recipe.output) == 1:
+        itemName = recipe.output[0].item.name
+      else:
+        raise ValueError('Cannot use default itemName value when output '
+                         'contains more than one product.')
+    return super().__name__(recipe, itemName, ips)
+
+  def consumptionRate(self, recipe: Recipe, itemName: str=None,
+                      count: int=1) -> float:
+    """Return the rate that an item is consumed, in items per second.
+
+    Mining drills typically only "consume" the resource that they're placed
+    on top of, which is equivalent to its output. Typically
+    Recipe.miningRecipe is used to construct the Recipe object, but this is
+    not a hard requirement.
+
+    Parameters
+    ----------
+    recipe: Recipe
+        The recipe to examine, usually from Recipe.miningRecipe.
+
+    itemName: str, optional
+        The specific recipe product to obtain the consumption rate for. If
+        unspecified, assumes the output item as long as it's the only
+        product.
+
+    count: int, optional
+        The number of identical producers concurrently crafting this recipe;
+        acts as a multiplier. Defaults to one.
+    """
+    if itemName is None:
+      if len(recipe.output) == 1:
+        itemName = recipe.output[0].item.name
+      else:
+        raise ValueError('Cannot use default itemName value when output '
+                         'contains more than one product.')
+    return super().__name__(recipe, itemName, count)
+
+  def consumptionRateInverse(self, recipe: Recipe, itemName: str,
+                            ips: float=1.0) -> float:
+    """Return the number of these producers needed to reach the given rate.
+
+    Mining drills typically only "consume" the resource that they're placed
+    on top of, which is equivalent to its output. Typically
+    Recipe.miningRecipe is used to construct the Recipe object, but this is
+    not a hard requirement.
+
+    Parameters
+    ----------
+    recipe: Recipe
+        The recipe to examine, usually from Recipe.miningRecipe.
+
+    itemName: str, optional
+        The specific recipe ingredient being consumed. If unspecified,
+        assumes the output product as long as it's the only product, since
+        the miner consumes from the ground what it produces.
+
+    ips: float, optional
+        The target consumption rate to meet. Defaults to one per second.
+    """
+    if itemName is None:
+      if len(recipe.output) == 1:
+        ingredient = recipe.output[0].item.name
+      else:
+        raise ValueError('Cannot use default itemName value when output '
+                         'contains more than one product.')
+    return super().__name__(recipe, itemName, ips)
+
+  def rates(self, recipe: Recipe, count: int=1) -> dict:
+    """Calculate all rates for this producer.
+
+    Generates a report of every rate associated with this producer, such as
+    energy consumption, pollution generated, individual items consumed and
+    produced, etc.
+
+    For mining drills, the "consumption" is the same as its production unless
+    it has extra inputs or outputs.
+
+    Parameters
+    ----------
+    recipe: Recipe
+        The recipe to base the rates on, usually from Recipe.miningRecipe.
+
+    count: int, optional
+        The number of identical producers concurrently crafting this recipe;
+        acts as a multiplier. Defaults to one.
+    """
+    rateDict = super().__name__(recipe, count)
+    if not rateDict['consumed']:
+      rateDict['consumed'] = rateDict['produced']
+    return rateDict
