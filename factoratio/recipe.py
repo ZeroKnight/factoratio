@@ -1,4 +1,4 @@
-from typing import Set, Union
+from typing import List, Union
 
 class Ingredient():
   """Class representing a crafting ingredient.
@@ -39,12 +39,12 @@ class Recipe():
       The time for the recipe to complete. Modified by a producer's crafting
       speed.
 
-  input_, output: Set of Ingredients
-      Set of Ingredients for recipe input and output.
+  input_, output: List of Ingredients
+      List of Ingredients for recipe input and output.
   """
 
-  def __init__(self, time: float, input_: Set[Ingredient],
-               output: Set[Ingredient]):
+  def __init__(self, time: float, input_: List[Ingredient],
+               output: List[Ingredient]):
     self.time = time
     self.input = input_
     self.output = output
