@@ -54,6 +54,7 @@ class Module():
       return f'Tier {self.tier} {self.name} Module'
 
 
+# TODO: Include productivity bonus in relevent methods
 class Producer():
   """Base class for entities that produce an item as output.
 
@@ -130,8 +131,8 @@ class Producer():
     """
     craftTime = recipe.time / self.craftSpeed * self.speedMultiplier()
     energyMult = self.energyMultiplier()
-    # TODO: check to see if drain is also modified
-    energyConsumed = (self.energyUsage + self.drain) * energyMult * craftTime
+    energyConsumed = (self.drain + self.energyUsage * energyMult) * craftTime
+    # FIXME: pollution value is per minute
     pollutionCreated = self.pollution * self.pollutionMultiplier() * energyMult
 
     return {'duration': craftTime, 'output': recipe.output,
