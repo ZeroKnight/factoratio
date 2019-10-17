@@ -138,7 +138,8 @@ class Producer():
     return {'duration': craftTime, 'output': recipe.output,
             'energy': energyConsumed, 'pollution': pollutionCreated}
 
-  def productionRate(self, recipe: Recipe, item: str, count: int=1) -> float:
+  def productionRate(self, recipe: Recipe, itemName: str,
+                     count: int=1) -> float:
     """Return the rate that an item is produced, in items per second.
 
     Parameters
@@ -146,17 +147,18 @@ class Producer():
     recipe: Recipe
         The recipe to examine.
 
-    item: str
+    itemName: str
         The specific recipe product to obtain the production rate for.
 
     count: int, optional
         The number of identical producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
-    return count * recipe.output[item] / self.craft(recipe)['duration']
+    ingredient = recipe.getOutputByName[itemName]
+    return count * ingredient.count / self.craft(recipe)['duration']
 
-  def productionRateInverse(self, recipe: Recipe, item: str,
-                            ips: float) -> float:
+  def productionRateInverse(self, recipe: Recipe, itemName: str,
+                            ips: float=1.0) -> float:
     """Return the number of these producers needed to reach the given rate.
 
     Parameters
@@ -164,15 +166,17 @@ class Producer():
     recipe: Recipe
         The recipe to examine.
 
-    item: str
+    itemName: str
         The specific recipe product being produced.
 
-    ips: float
-        The target production rate to meet.
+    ips: float, optional
+        The target production rate to meet. Defaults to one item per second.
     """
-    return ips * self.craft(recipe)['duration'] / recipe.output[item]
+    ingredient = recipe.getOutputByName(itemName)
+    return ips * self.craft(recipe)['duration'] / ingredient.count
 
-  def consumptionRate(self, recipe: Recipe, item: str, count: int=1) -> float:
+  def consumptionRate(self, recipe: Recipe, itemName: str,
+                      count: int=1) -> float:
     """Return the rate that an item is consumed, in items per second.
 
     Parameters
@@ -180,17 +184,18 @@ class Producer():
     recipe: Recipe
         The recipe to examine.
 
-    item: str
+    itemName: str
         The specific recipe product to obtain the consumption rate for.
 
     count: int, optional
         The number of identical producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
-    return count * recipe.input[item] / self.craft(recipe)['duration']
+    ingredient = recipe.getInputByName(itemName)
+    return count * ingredient.count / self.craft(recipe)['duration']
 
-  def consumptionRateInverse(self, recipe: Recipe, item: str,
-                            ips: float) -> float:
+  def consumptionRateInverse(self, recipe: Recipe, itemName: str,
+                            ips: float=1.0) -> float:
     """Return the number of these producers needed to reach the given rate.
 
     Parameters
@@ -198,13 +203,14 @@ class Producer():
     recipe: Recipe
         The recipe to examine.
 
-    item: str
+    itemName: str
         The specific recipe ingredient being consumed.
 
-    ips: float
-        The target consumption rate to meet.
+    ips: float, optional
+        The target consumption rate to meet. Defaults to one item per second.
     """
-    return ips * self.craft(recipe)['duration'] / recipe.input[item]
+    ingredient = recipe.getInputByName(itemName)
+    return ips * self.craft(recipe)['duration'] / ingredient.count
 
   def rates(self, recipe: Recipe, count: int=1) -> dict:
     """Calculate all rates for this producer.
@@ -268,7 +274,7 @@ class BurnerProducer(Producer, Burner):
     rateDict['fuel'] = rateDict['energy'] / fuel.energy.value
     return rateDict
 
-  def productsPerFuel(self, recipe: Recipe, item: str, fuel: Fuel,
+  def productsPerFuel(self, recipe: Recipe, itemName: str, fuel: Fuel,
                       count: int=1) -> float:
     """The number of items produced per unit of fuel burned.
 
@@ -277,7 +283,7 @@ class BurnerProducer(Producer, Burner):
     recipe: Recipe
         The recipe to examine.
 
-    item: str
+    itemName: str
         The specific recipe ingredient being produced.
 
     fuel: factoratio.fuel.Fuel
@@ -287,7 +293,7 @@ class BurnerProducer(Producer, Burner):
         The number of furnaces running concurrently. Defaults to one.
     """
     return (fuel.burnTime(self.energyConsumption)
-            / self.productionRate(recipe, item, count))
+            / self.productionRate(recipe, itemName, count))
 
 
 class MiningDrill(Producer):
