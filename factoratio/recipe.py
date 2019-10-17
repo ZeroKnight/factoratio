@@ -1,5 +1,13 @@
 from typing import List, Union
 
+# TODO: Finish interface and pull from game data in implementation
+class Item():
+  """Class representing an arbitrary game item."""
+
+  def __init__(self, name: str):
+    self.name = name
+
+
 class Ingredient():
   """Class representing a crafting ingredient.
 
@@ -27,7 +35,6 @@ class Ingredient():
     return f'{self.count}x {self.item.name}'
 
 
-# TBD: List or Set for Ingredients?
 class Recipe():
   """Base class for a crafting recipe.
 
