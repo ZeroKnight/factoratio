@@ -444,3 +444,12 @@ class MiningDrill(Producer):
     if not rateDict['consumed']:
       rateDict['consumed'] = rateDict['produced']
     return rateDict
+
+
+class BurnerMiningDrill(MiningDrill, Burner):
+  """A class representing a burner mining drill.
+
+  A burner mining drill is simply a MiningDrill that is powered by burning a
+  Fuel.
+  """
+  pass
