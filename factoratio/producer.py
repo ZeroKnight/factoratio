@@ -270,7 +270,7 @@ class BurnerProducer(Producer, Burner):
         The number of identical producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
-    rateDict = super().__name__(recipe, count)
+    rateDict = super().rates(recipe, count)
     rateDict['fuel'] = rateDict['energy'] / fuel.energy.value
     return rateDict
 
@@ -334,7 +334,7 @@ class MiningDrill(Producer):
       else:
         raise ValueError('Cannot use default itemName value when output '
                          'contains more than one product.')
-    return super().__name__(recipe, itemName, count)
+    return super().productionRate(recipe, itemName, count)
 
   def productionRateInverse(self, recipe: Recipe, itemName: str=None,
                             ips: float=1.0) -> float:
@@ -358,7 +358,7 @@ class MiningDrill(Producer):
       else:
         raise ValueError('Cannot use default itemName value when output '
                          'contains more than one product.')
-    return super().__name__(recipe, itemName, ips)
+    return super().productionRateInverse(recipe, itemName, ips)
 
   def consumptionRate(self, recipe: Recipe, itemName: str=None,
                       count: int=1) -> float:
@@ -389,7 +389,7 @@ class MiningDrill(Producer):
       else:
         raise ValueError('Cannot use default itemName value when output '
                          'contains more than one product.')
-    return super().__name__(recipe, itemName, count)
+    return super().consumptionRate(recipe, itemName, count)
 
   def consumptionRateInverse(self, recipe: Recipe, itemName: str,
                             ips: float=1.0) -> float:
@@ -419,7 +419,7 @@ class MiningDrill(Producer):
       else:
         raise ValueError('Cannot use default itemName value when output '
                          'contains more than one product.')
-    return super().__name__(recipe, itemName, ips)
+    return super().consumptionRateInverse(recipe, itemName, ips)
 
   def rates(self, recipe: Recipe, count: int=1) -> dict:
     """Calculate all rates for this producer.
@@ -440,7 +440,7 @@ class MiningDrill(Producer):
         The number of identical producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
-    rateDict = super().__name__(recipe, count)
+    rateDict = super().rates(recipe, count)
     if not rateDict['consumed']:
       rateDict['consumed'] = rateDict['produced']
     return rateDict
