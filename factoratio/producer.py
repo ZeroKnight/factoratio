@@ -154,7 +154,7 @@ class Producer():
         The number of identical producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
-    ingredient = recipe.getOutputByName[itemName]
+    ingredient = recipe.getOutputByName(itemName)
     return count * ingredient.count / self.craft(recipe)['duration']
 
   def productionRateInverse(self, recipe: Recipe, itemName: str,
@@ -242,8 +242,8 @@ class Producer():
       'producers': count,
       'consumed': consumed,
       'produced': produced,
-      'energy': craftResult['energyConsumed'] / duration * count,
-      'pollution': craftResult['pollutionCreated'] / duration * count
+      'energy': craftResult['energy'] / duration * count,
+      'pollution': craftResult['pollution'] / duration * count
     }
 
 
