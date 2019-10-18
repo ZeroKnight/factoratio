@@ -49,15 +49,9 @@ class Burner():
   As opposed to other devices that directly run on electrical power, burner
   devices consume a fuel source at a constant rate while operational.
 
-  Attributes
-  ----------
-  energyConsumption: factoratio.util.Watt
-      The amount of energy this burner consumes from its fuel source per
-      second in order to operate.
+  The mixed class must implement an energyUsage attribute for this mixin to
+  have any use.
   """
-
-  def __init__(self, energyConsumption: Watt):
-    self.energyConsumption = energyConsumption
 
   def fuelConsumptionRate(self, fuel: Fuel, count: int=1) -> float:
     """The amount of the given fuel this burner will consume per second.
@@ -73,7 +67,7 @@ class Burner():
     # 1 fuel / burnTime = 1 fuel/s
     # 1 fuel/s * n burners = n / s
     # burners = fuel since they burn 1 fuel at a time
-    return count / fuel.burnTime(self.energyConsumption)
+    return count / fuel.burnTime(self.energyUsage)
 
   def fuelConsumptionRateInverse(self, rate: float, fuel: Fuel) -> float:
     """The number of burners required to reach the given rate.
@@ -86,7 +80,7 @@ class Burner():
     fuel: factoratio.fuel.Fuel
         The fuel being burned.
     """
-    return rate * fuel.burnTime(self.energyConsumption)
+    return rate * fuel.burnTime(self.energyUsage)
 
 # TODO: Move this to implementation
 # Define the Fuel types
