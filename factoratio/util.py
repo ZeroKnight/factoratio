@@ -1,6 +1,103 @@
+"""util.py
+
+Miscellaneous utility functions and clases.
+"""
+
 import functools
+import logging
 import math
+from pathlib import Path
+import sys
 from typing import Union
+from xdgappdirs import user_config_dir
+
+from factoratio import APPNAME
+
+logger = logging.getLogger('factoratio')
+
+def getConfigPath(path: Path=None) -> Path:
+  """Returns a Path object relative to the user configuration directory."""
+
+  configDir = user_config_dir(APPNAME, appauthor=False, roaming=True,
+                               as_path=True)
+  return configDir.joinpath(path or '')
+
+def getSteamLibraries(steamPath: Path) -> list:
+  """Retrieve a list of Steam library paths.
+
+  Given the path to a Steam installation, and by extension the primary
+  library, return a list containing the primary library and any extra
+  libraries listed in steamapps/libraryfolders.vdf.
+
+  Parameters
+  ----------
+  steamPath: Path
+      The path to a Steam installation, e.g. Path(r'C:\Program Files\Steam').
+  """
+  lfPath = steamPath / 'steamapps' / 'libraryfolders.vdf'
+  if not lfPath.exists():
+    raise FileNotFoundError('Could not find libraryfolders.vdf in the Steam '
+                            f"installation at '{steamPath}'")
+  libraries = [steamPath]
+  with lfPath.open() as lf:
+    for line in lf:
+      parts = line.replace('"', '').split()
+      if parts[0].isdigit():
+        libraries.append(Path(parts[1]))
+  return libraries
+
+def getFactorioPath():
+  steamPath = fallbackSteamPath = None
+  # Check for Steam version
+  if sys.platform == 'win32':
+    import winreg
+    try:
+      with winreg.OpenKeyEx(winreg.HKEY_CURRENT_USER,
+      r'Software\Valve\Steam') as key:
+        steamPath = Path(winreg.QueryValueEx(key, 'SteamPath')[0])
+    except FileNotFoundError as err:
+      logger.debug('Registry lookup for Steam installation failed: ', err)
+  elif sys.platform == 'linux':
+    # NOTE: Some people move Steam from the default install location, which the
+    # Steam client seems to support, as it will ask where its files are.
+    # /usr/bin/steam is actually a wrapper script that points Steam in the
+    # right places. I believe that the the wrapper/bootstrap points the
+    # ~/.steam/steam symlink to the proper Steam installation, so we can use it
+    # as a fallback if the default path is invalid.
+    steamPath = Path.home() / '.local' / 'share' / 'Steam'
+    fallbackSteamPath = Path.home() / '.steam' / 'steam'
+    if not steamPath.exists():
+      logger.warning(f'No Steam installation found at the default path '
+                      f'({steamPath}). Attempting to fall back to '
+                      f"'{fallbackSteamPath}'")
+      steamPath = fallbackSteamPath if fallbackSteamPath.exists() else None
+
+  if steamPath is not None:
+    for library in getSteamLibraries(steamPath):
+      factorioPath = library / 'steamapps' / 'common' / 'Factorio'
+      if factorioPath.exists():
+        return factorioPath
+  else:
+    logger.debug('Could not find Steam installation; attempting to find the '
+                  'stand-alone installation...')
+
+  # Check for stand-alone version
+  if sys.platform == 'win32':
+    try:
+      key = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE,
+        r'Software\Microsoft\Windows\CurrentVersion\Uninstall\Factorio_is1')
+      factorioPath = winreg.QueryValueEx(key, 'InstallLocation')
+    except FileNotFoundError as err:
+      logger.debug('Registry lookup for Steam installation failed: ', err)
+  elif sys.platform == 'linux':
+    logger.warning('Stand-alone installation lookup is not supported on '
+                    'Linux, as it is just a simple tarball.')
+  if factorioPath.exists():
+    return factorioPath
+  else:
+    logger.warning('Could not find a stand-alone installation!')
+    return None
+
 
 class SINumber():
   """A class representing an arbitrary unit number supporting SI suffixes.
