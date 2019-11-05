@@ -31,11 +31,21 @@ def readConfig(cfg: Path) -> configparser.ConfigParser:
   config.read(cfg)
   return config
 
+def luaDataIter(data: 'LuaTable'):
+  """Generate an iterator for the Lua 'data' table.
+
+  Returns each child table; excludes the 'extend' method.
+  """
+  tables = filter(lambda x: x[0] != 'extend', data.items())
+  for table in (x[1] for x in tables):
+    yield table
+
 if __name__ == "__main__":
   configDir = util.getConfigPath()
   if not configDir.exists(): configDir.mkdir()
 
   # Set up logging
+  # TODO: formatting
   logger.setLevel(logging.DEBUG) # TEMP
   logger.addHandler(logging.StreamHandler())
   logPath = util.getConfigPath(Path(f'{APPNAME}.log'))
@@ -84,13 +94,11 @@ if __name__ == "__main__":
     except LuaError:
       logger.error(f"Lua error while executing '{prototype}'")
       raise
-
-  tables = filter(lambda x: x[0] != 'extend', lua.globals().data.items())
-  for table in (x[1] for x in tables):
+  for table in luaDataIter(lua.globals().data):
     if table.flags and 'hidden' in table.flags.values():
       logger.debug(f'Skipping hidden item {table.name} in {prototype.name}')
       continue
-    name = table['name']
+    name = table.name
     items[name] = dict(filter(
       lambda x: re.match(r'(?:sub)?group|order|type', x[0]), table.items()))
 
