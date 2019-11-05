@@ -65,7 +65,7 @@ if __name__ == "__main__":
       'cannot continue. Ensure that the path to the Factorio installation is '
       'correct and that it is properly installed.')
 
-  items = {}
+  items, recipes = {}, {}
   lua = LuaRuntime()
   lua.execute(
     f"package.path = package.path .. ';{protoPath.parent.as_posix()}/?.lua'")
@@ -101,5 +101,19 @@ if __name__ == "__main__":
     name = table.name
     items[name] = dict(filter(
       lambda x: re.match(r'(?:sub)?group|order|type', x[0]), table.items()))
+
+  lua.execute("data = {extend = data['extend']}")
+  for prototype in protoPath.glob('recipe/*.lua'):
+    with prototype.open() as p: code = p.read()
+    try:
+      lua.execute(code)
+    except LuaError:
+      logger.error(f"Lua error while executing '{prototype}'")
+      raise
+  for table in luaDataIter(lua.globals().data):
+    # Skip recipes for hidden items
+    if table.name not in items: continue
+    name = table.name
+    recipes[name] = dict(filter(lambda x: x[0] != 'name', table.items()))
 
   pass
