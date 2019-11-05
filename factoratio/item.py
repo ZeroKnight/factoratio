@@ -1,11 +1,23 @@
 from typing import List, Union
 
-# TODO: Finish interface and pull from game data in implementation
 class Item():
-  """Class representing an arbitrary game item."""
+  """Class representing an arbitrary game item.
 
-  def __init__(self, name: str):
+  Item groups are shown above the list of craftable items in the player's
+  inventory, e.g. Logistics, Production, Intermediates, Combat, etc.
+
+  Item subgroups are more fine-grained categories for items, e.g. "ammo",
+  "storage", "belt", etc.
+  """
+
+  def __init__(self, name: str, type_: str, group: str, subgroup: str,
+               order: str):
     self.name = name
+    self.type = type_
+    self.group = group
+    self.subgroup = subgroup
+    self.order = order
+    # self.icon = ... # TODO: Will be relevent when the GUI code is started
 
 
 class Ingredient():

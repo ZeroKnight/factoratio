@@ -7,9 +7,9 @@ import sys
 from lupa import LuaError, LuaRuntime
 
 from factoratio import APPNAME
-import factoratio.fuel as f
-import factoratio.producer as p
-import factoratio.recipe as r
+import factoratio.fuel as fuel
+import factoratio.producer as producer
+import factoratio.item as item
 import factoratio.util as util
 from factoratio.util import Joule, Watt
 

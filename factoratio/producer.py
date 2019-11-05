@@ -1,5 +1,5 @@
 from factoratio.fuel import Burner, Fuel
-from factoratio.recipe import Ingredient, Recipe
+from factoratio.item import Ingredient, Recipe
 from factoratio.util import Watt
 
 class Module():
