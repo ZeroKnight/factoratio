@@ -1,9 +1,10 @@
 import configparser
 import logging
 from pathlib import Path
+import re
 import sys
 
-from lupa import LuaRuntime
+from lupa import LuaError, LuaRuntime
 
 from factoratio import APPNAME
 import factoratio.fuel as f
@@ -48,26 +49,49 @@ if __name__ == "__main__":
   if factorioPath is None:
     logger.error('Could not determine Factorio install location.')
     factorioPath = Path(input('Enter path to Factorio installation: '))
-
-  items = {}
-  lua = LuaRuntime()
   protoPath = factorioPath / 'data' / 'base' / 'prototypes'
   if not protoPath.exists():
     logger.critical(f"Could not find item prototypes at '{protoPath}'; "
       'cannot continue. Ensure that the path to the Factorio installation is '
       'correct and that it is properly installed.')
+
+  items = {}
+  lua = LuaRuntime()
+  lua.execute(
+    f"package.path = package.path .. ';{protoPath.parent.as_posix()}/?.lua'")
+  lua.execute('''data = {
+    extend = function(self, otherdata)
+      if type(otherdata) ~= 'table' or #otherdata == 0 then
+        error('Invalid prototype array in ' .. python.eval('prototype'))
+      end
+      for _, block in ipairs(otherdata) do
+        table.insert(self, block)
+      end
+    end
+  }''')
   for prototype in protoPath.glob('item/*.lua'):
-    data = ''
+    code = ''
     with prototype.open() as p:
-      while p.readline().strip() != 'data:extend(': pass
       for line in p:
-        data += line.strip()
-      if data[-1] == ')': data = data[:-1]
-    for table in lua.eval(data).values():
-      # FIXME: crashes when parsing demo-crash-site-item.lua because there's two
-      # data:extend calls. Might be a better idea to use lua.execute to create
-      # our own data:extend that does or facilitatse the same as below
-      name = table['name']
-      items[name] = dict(filter(lambda x: x[0] != 'name', table.items()))
+        # The 'gun.lua' prototype has a require that utilizes a 'util' function
+        # that's probably only used during Factorio's data runtime. We
+        # obviously don't have the definition, but also don't need it anyway,
+        # so skip it.
+        if not re.search(r'= require\(', line):
+          code += line
+    try:
+      lua.execute(code)
+    except LuaError:
+      logger.error(f"Lua error while executing '{prototype}'")
+      raise
+
+  tables = filter(lambda x: x[0] != 'extend', lua.globals().data.items())
+  for table in (x[1] for x in tables):
+    if table.flags and 'hidden' in table.flags.values():
+      logger.debug(f'Skipping hidden item {table.name} in {prototype.name}')
+      continue
+    name = table['name']
+    items[name] = dict(filter(
+      lambda x: re.match(r'(?:sub)?group|order|type', x[0]), table.items()))
 
   pass
