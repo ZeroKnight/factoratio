@@ -453,3 +453,14 @@ class BurnerMiningDrill(MiningDrill, Burner):
   Fuel.
   """
   pass
+
+
+# TODO: Find a place for these prototype functions
+
+# def forgesGivenMiners(miners: int, craft: Craft) -> int:
+#   """Number of forges that can be sustained with the given number of miners."""
+#   return math.floor(ipsInverse(minerIps(miners), craft))
+
+# def minersGivenForges(forges: int, craft: Craft) -> int:
+#   """Number of miners needed to sustain the given number of forges."""
+#   return math.ceil(minerIpsInverse(ips(forges, craft)))
