@@ -1,20 +1,89 @@
+from collections import abc
 from typing import List, Union
 
-class Item():
-  """Class representing an arbitrary game item.
+class ItemGroup(abc.MutableMapping):
+  """Class representing an item group used to categorize items.
 
-  Item groups are shown above the list of craftable items in the player's
-  inventory, e.g. Logistics, Production, Intermediates, Combat, etc.
+  ItemGroups are mappings of group names to either a subordinate ItemGroup or
+  to an Item. In the former case, the ItemGroup's parent is None and is
+  interpreted as a top-level group. In the latter case, the ItemGroup is
+  interpreted as a "subgroup" of a top-level ItemGroup that can be referenced
+  by its parent attribute.
+
+  In game, top-level item groups are shown above the list of craftable items
+  in the player's inventory, e.g. Logistics, Production, Intermediates,
+  Combat, etc.
 
   Item subgroups are more fine-grained categories for items, e.g. "ammo",
-  "storage", "belt", etc.
+  "storage", "belt", etc, and belong to a top-level group.
+
+  Attributes
+  ----------
+  name: str
+      The name of the item group, e.g. 'Logistics'.
+
+  order: str
+      A string defining the sort order for this group.
+
+  parent: ItemGroup, optional
+      A reference to this item group's parent if it's a subgroup, or None if
+      it's a top-level group, which is the default.
+
+  Parameters
+  ----------
+  *args, **kwargs:
+      Any extra parameters will be used to populate the ItemGroup mapping.
   """
 
-  def __init__(self, name: str, type_: str, group: str, subgroup: str,
-               order: str):
+  def __init__(self, name: str, order: str, parent: 'ItemGroup'=None,
+               *args, **kwargs):
+    self.name = name
+    self.order = order
+    self.parent = parent
+    self._children = {}
+    for k, v in zip(args[::2], args[1::2]): self[k] = v
+    for k, v in kwargs.items(): self[k] = v
+
+  def __repr__(self):
+    return (f'{self.__class__.__name__}({self.name}, {self.order}, '
+            f'{self.parent}): {self._children!r})')
+
+  def __str__(self):
+    return self.name
+
+  def __setitem__(self, key: str, value):
+    if isinstance(key, str):
+      if isinstance(value, (self.__class__.__name__, Item)):
+        self._children[key] = value
+      else:
+        raise TypeError(f'{self.__class__.__name__} values must be of type '
+                        f'{self.__class__.__name__} or Item')
+    else:
+      raise TypeError(f'{self.__class__.__name__} keys must be of type str')
+
+  def __getitem__(self, key: str):
+    return self._children[key]
+
+  def __delitem__(self, key):
+    del self._children[key]
+
+  # TODO: return based on children objects' order member
+  def __iter__(self):
+    return iter(self._children)
+
+  def __len__(self):
+    return len(self._children)
+
+  def __bool__(self):
+    return self._children.__bool__()
+
+
+class Item():
+  """Class representing an arbitrary game item."""
+
+  def __init__(self, name: str, type_: str, subgroup: ItemGroup, order: str):
     self.name = name
     self.type = type_
-    self.group = group
     self.subgroup = subgroup
     self.order = order
     # self.icon = ... # TODO: Will be relevent when the GUI code is started
