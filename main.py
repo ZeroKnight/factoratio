@@ -15,6 +15,8 @@ from factoratio.util import Joule, Watt
 
 logger = logging.getLogger('factoratio')
 
+items, groups, subgroups, recipes = ({} for _ in range(4))
+
 def readConfig(cfg: Path) -> configparser.ConfigParser:
   """Load Factoratio's user configuration from the given path.
 
@@ -74,11 +76,14 @@ if __name__ == "__main__":
       if type(otherdata) ~= 'table' or #otherdata == 0 then
         error('Invalid prototype array in ' .. python.eval('prototype'))
       end
-      for _, block in ipairs(otherdata) do
+      for key, block in pairs(otherdata) do
         table.insert(self, block)
       end
     end
   }''')
+
+  # Get Item, Group, and Subgroup prototype definitions
+  logger.info(f"Reading prototypes from '{protoPath}' ...")
   for prototype in protoPath.glob('item/*.lua'):
     code = ''
     with prototype.open() as p:
@@ -96,11 +101,41 @@ if __name__ == "__main__":
       raise
   for table in luaDataIter(lua.globals().data):
     if table.flags and 'hidden' in table.flags.values():
-      logger.debug(f'Skipping hidden item {table.name} in {prototype.name}')
+      logger.debug(f"Skipping hidden Item '{table.name}'")
       continue
     name = table.name
-    items[name] = dict(filter(
-      lambda x: re.match(r'(?:sub)?group|order|type', x[0]), table.items()))
+    type_ = table.type
+    if type_ == 'item-group':
+      logger.debug(f"Adding Group '{name}'")
+      groups[name] = item.ItemGroup(name, table.order)
+    # Defer creating the actual objects until after all (Sub)Groups are known
+    elif type_ == 'item-subgroup':
+      logger.debug(f"Adding Subgroup '{name}'")
+      subgroups[name] = {'order': table.order, 'parent': table.group}
+    else:
+      logger.debug(f"Adding Item '{name}'")
+      items[name] = {'type_': type_, 'parent': table.subgroup,
+                     'order': table.order}
+
+  # Link the Groups, Subgroups, and Items together
+  for k, v in subgroups.items():
+    subgroups[k] = item.ItemGroup(k, v['order'], groups[v['parent']])
+    groups[v['parent']][k] = subgroups[k]
+  for k, v in items.items():
+    items[k] = item.Item(k, v['type_'], subgroups[v['parent']], v['order'])
+    subgroups[v['parent']][k] = items[k]
+
+  # Remove Subgroups with no Items; i.e. all its Items were "hidden"
+  hidden_subgroups = []
+  for k, v in subgroups.items():
+    if not len(v):
+      hidden_subgroups.append(k)
+      del groups[v.parent.name][v.name]
+  for subgroup in hidden_subgroups:
+    del subgroups[subgroup]
+
+  logger.info(f'Loaded {len(groups)} Groups, {len(subgroups)} Subgroups, and '
+              f'{len(items)} Items')
 
   lua.execute("data = {extend = data['extend']}")
   for prototype in protoPath.glob('recipe/*.lua'):
