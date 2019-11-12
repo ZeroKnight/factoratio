@@ -53,7 +53,7 @@ class ItemGroup(abc.MutableMapping):
 
   def __setitem__(self, key: str, value):
     if isinstance(key, str):
-      if isinstance(value, (self.__class__.__name__, Item)):
+      if isinstance(value, (self.__class__, Item)):
         self._children[key] = value
       else:
         raise TypeError(f'{self.__class__.__name__} values must be of type '
