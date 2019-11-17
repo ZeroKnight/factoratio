@@ -1,4 +1,5 @@
 from collections import abc
+from dataclasses import dataclass
 from typing import List, Union
 
 class ItemGroup(abc.MutableMapping):
@@ -78,39 +79,53 @@ class ItemGroup(abc.MutableMapping):
     return self._children.__bool__()
 
 
+@dataclass
 class Item():
-  """Class representing an arbitrary game item."""
+  """Class representing an arbitrary game item.
 
-  def __init__(self, name: str, type_: str, subgroup: ItemGroup, order: str):
-    self.name = name
-    self.type = type_
-    self.subgroup = subgroup
-    self.order = order
-    # self.icon = ... # TODO: Will be relevent when the GUI code is started
+  Attributes
+  ----------
+  name: str
+      The name of the Item as defined by its prototype; not to be confused
+      with a localized name.
+
+  type: str
+      The Item's type as defined by its prototype.
+
+  subgroup: ItemGroup
+      The Subgroup that this Item belongs to.
+
+  order: str
+      A string defining the sort order for this Item.
+  """
+
+  name: str
+  type: str
+  subgroup: ItemGroup
+  order: str
+  # icon = ... # TODO: Will be relevent when the GUI code is started
+
+  def __str__(self):
+    return f'{self.name}'
 
 
+@dataclass
 class Ingredient():
   """Class representing a crafting ingredient.
 
-  An Ingredient is a specific item in some quantity; typically used in the
-  creation of a Recipe.
+  An Ingredient is a specific Item in some quantity for use in a Recipe.
 
   Attributes
   ----------
   item: Item
-      The item to be used as an ingredient.
+      The Item to be used as an Ingredient.
 
   count: int
-      The amount of the item for this ingredient.
+      The amount of the Item for this Ingredient.
   """
 
-  # TODO: Create Item class and add string lookup
-  def __init__(self, item: Union[Item, str], count: int):
-    self.item = item
-    self.count = count
-
-  def __repr__(self):
-    return f'{self.__class__.__name__}({self.item!r}, {self.count!r})'
+  item: Item
+  count: int
 
   def __str__(self):
     return f'{self.count}x {self.item.name}'
