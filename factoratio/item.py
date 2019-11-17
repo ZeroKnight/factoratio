@@ -173,14 +173,14 @@ class Recipe():
         speed.
 
     item: Item
-        The item that this drill extracts as output by default.
+        The Item that this drill extracts as output by default.
 
     input_: List of Ingredients, optional
-        Any ingredients the drill requires to mine the resource. Defaults to
+        Any Ingredients the drill requires to mine the resource. Defaults to
         an empty list.
 
     output: List of Ingredients, optional
-        The products that the drill extracts. Defaults to the item parameter
+        The products that the drill extracts. Defaults to the Item parameter
         with a quantity of one.
     """
     if input_ is None:
@@ -190,9 +190,9 @@ class Recipe():
     return cls(time, input_, output)
 
   def getInputByName(self, name: str) -> Ingredient:
-    """Get an input ingredient by its name.
+    """Get an input Ingredient by its name.
 
-    Returns None if the item could not be found by the given name.
+    Returns None if the Item could not be found by the given name.
     """
     for ingredient in self.input:
       if ingredient.item.name == name:
