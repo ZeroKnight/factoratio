@@ -1,3 +1,4 @@
+import collections
 import configparser
 import logging
 from pathlib import Path
@@ -16,6 +17,7 @@ from factoratio.util import Joule, Watt
 logger = logging.getLogger('factoratio')
 
 items, fluids, groups, subgroups, recipes = ({} for _ in range(5))
+products = collections.ChainMap(items, fluids)
 
 def readConfig(cfg: Path) -> configparser.ConfigParser:
   """Load Factoratio's user configuration from the given path.
@@ -67,7 +69,6 @@ if __name__ == "__main__":
       'cannot continue. Ensure that the path to the Factorio installation is '
       'correct and that it is properly installed.')
 
-  items, recipes = {}, {}
   lua = LuaRuntime()
   lua.execute(
     f"package.path = package.path .. ';{protoPath.parent.as_posix()}/?.lua'")
@@ -164,8 +165,23 @@ if __name__ == "__main__":
       raise
   for table in luaDataIter(lua.globals().data):
     # Skip recipes for hidden items
-    if table.name not in items: continue
+    if table.name not in items or table.type != 'recipe': continue
     name = table.name
-    recipes[name] = dict(filter(lambda x: x[0] != 'name', table.items()))
+    # TODO: Handle expensive mode recipes. Store two Ingredient sets in Recipe.
+    ingTable = (table.normal or table.expensive or table)['ingredients']
+    input_ = [
+      item.Ingredient(products[x[1] or x.name], x[2] or x.amount)
+      for x in ingTable.values()
+    ]
+    if 'result' in table:
+      output = [item.Ingredient(products[table.result], table.result_count)]
+    elif 'results' in table:
+      output = [
+        item.Ingredient(products[x.name], x.amount, x.probability)
+        for x in table.results.values()
+      ]
+    recipes[name] = item.Recipe(input_, output, table.energy_required)
+
+  logger.info(f'Loaded {len(recipes)} Recipes')
 
   pass
