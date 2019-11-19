@@ -159,15 +159,22 @@ class Ingredient():
 
   Attributes
   ----------
-  item: Item
-      The Item to be used as an Ingredient.
+  what: Item or Fluid
+      The Item or Fluid to be used as an Ingredient.
 
   count: int
-      The amount of the Item for this Ingredient.
+      The amount of the Item or Fluid for this Ingredient.
   """
 
-  item: Item
-  count: int
+  what: Union[Item, Fluid]
+  count: int = None
+  probability: float = None
+
+  def __post_init__(self):
+    if not isinstance(self.what, (Item, Fluid)):
+      raise TypeError("'what' member must be of type Item or Fluid")
+    if self.count is None: self.count = 1
+    if self.probability is None: self.probability = 1
 
   def __str__(self):
     return f'{self.count}x {self.item.name}'
