@@ -139,6 +139,8 @@ class SINumber():
   def __init__(self, units: Union[str, int, float], baseSymbol: str):
     self.baseSymbol = baseSymbol
     if isinstance(units, str):
+      if units[-1].casefold() == self.baseSymbol.casefold():
+        units = units[:-1]
       try:
         suffix = units[-1].casefold()
       except IndexError:
