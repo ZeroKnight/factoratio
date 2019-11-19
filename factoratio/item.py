@@ -2,6 +2,8 @@ from collections import abc
 from dataclasses import dataclass
 from typing import List, Union
 
+from factoratio.util import Joule
+
 class ItemGroup(abc.MutableMapping):
   """Class representing an item group used to categorize items.
 
@@ -104,6 +106,46 @@ class Item():
   subgroup: ItemGroup
   order: str
   # icon = ... # TODO: Will be relevent when the GUI code is started
+
+  def __str__(self):
+    return f'{self.name}'
+
+
+@dataclass
+class Fluid():
+  """Class representing an arbitrary game fluid.
+
+  Attributes
+  ----------
+  name: str
+      The name of the Fluid as defined by its prototype; not to be confused
+      with a localized name.
+
+  temp_default: float
+      The default and also minimum temperature of this Fluid
+
+  temp_max: float
+      The maxmimum temperature of this Fluid
+
+  heat_capacity: Joule
+      The amount of Joules needed to heat 1 unit of this Fluid by 1C
+
+  order: str
+      A string defining the sort order for this Fluid.
+  """
+
+  name: str
+  temp_default: float
+  temp_max: float
+  heat_capacity: Union[Joule, str]
+  order: str
+  # icon: ... # TODO
+
+  def __post_init__(self):
+    if isinstance(self.heat_capacity, str):
+      self.heat_capacity = Joule(self.heat_capacity)
+    else:
+      raise TypeError('heat_capacity must be of type str or Joule')
 
   def __str__(self):
     return f'{self.name}'

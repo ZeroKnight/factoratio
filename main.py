@@ -15,7 +15,7 @@ from factoratio.util import Joule, Watt
 
 logger = logging.getLogger('factoratio')
 
-items, groups, subgroups, recipes = ({} for _ in range(4))
+items, fluids, groups, subgroups, recipes = ({} for _ in range(5))
 
 def readConfig(cfg: Path) -> configparser.ConfigParser:
   """Load Factoratio's user configuration from the given path.
@@ -137,6 +137,23 @@ if __name__ == "__main__":
   logger.info(f'Loaded {len(groups)} Groups, {len(subgroups)} Subgroups, and '
               f'{len(items)} Items')
 
+  # Get Fluid prototypes
+  lua.execute("data = {extend = data['extend']}")
+  for prototype in protoPath.glob('fluid/*.lua'):
+    with prototype.open() as p: code = p.read()
+    try:
+      lua.execute(code)
+    except LuaError:
+      logger.error(f"Lua error while executing '{prototype}'")
+      raise
+  for table in luaDataIter(lua.globals().data):
+    name = table.name
+    if table.type != 'fluid': continue
+    fluids[name] = item.Fluid(name, table.default_temperature,
+                              table.max_temperature, table.heat_capacity,
+                              table.order)
+
+  # Get Recipe prototypes
   lua.execute("data = {extend = data['extend']}")
   for prototype in protoPath.glob('recipe/*.lua'):
     with prototype.open() as p: code = p.read()
