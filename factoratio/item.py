@@ -187,16 +187,16 @@ class Recipe():
 
   Attributes
   ----------
-  time: float
-      The time for the recipe to complete. Modified by a producer's crafting
-      speed.
-
   input_, output: List of Ingredients
       List of Ingredients for recipe input and output.
+
+  time: float
+      The time for the recipe to complete. Modified by a producer's crafting
+      speed. Defaults to 0.5 game seconds.
   """
 
-  def __init__(self, time: float, input_: List[Ingredient],
-               output: List[Ingredient]):
+  def __init__(self, input_: List[Ingredient], output: List[Ingredient],
+               time: float=0.5):
     self.time = time
     self.input = input_
     self.output = output
