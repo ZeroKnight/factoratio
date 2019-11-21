@@ -245,14 +245,16 @@ def initialize(protoPath: Path) -> Prototypes:
       logger.debug(f"Adding Item '{name}'")
       items[name] = reader.makeItem(table)
 
-  # Remove Subgroups with no Items; i.e. all its Items were "hidden"
-  hidden_subgroups = []
-  for k, v in subgroups.items():
-    if not len(v):
-      hidden_subgroups.append(k)
-      del groups[v.parent.name][v.name]
-  for subgroup in hidden_subgroups:
-    del subgroups[subgroup]
+  # Remove Groups and Subgroups that ended up being empty due to hidden Items
+  for name, subgroup in dict(subgroups).items():
+    if not len(subgroup):
+      logger.debug(f"Removing empty Subgroup '{subgroup}'")
+      del groups[subgroup.parent.name][subgroup.name]
+      del subgroups[subgroup.name]
+  for name, group in dict(groups).items():
+    if not len(group):
+      logger.debug(f"Removing empty Group '{group}'")
+      del groups[name]
 
   # Get Fluid prototypes
   reader.loadPrototypes('fluid')
