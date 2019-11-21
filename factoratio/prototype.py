@@ -1,5 +1,6 @@
 import collections
 from dataclasses import dataclass, field
+import functools
 import logging
 from pathlib import Path
 import re
@@ -79,19 +80,19 @@ class ProtoReader():
     for table in (x[1] for x in tables):
       yield table
 
-  def makeRecipe(self, prototypes: Prototypes, table: 'LuaTable',
-                 expensive: bool=False) -> Tuple[str, item.Recipe]:
-    """Create a Recipe object from a recipe prototype definition.
+  def _make(type_):
+    """Internal decorator for implementing make* methods."""
+    def decorator__make(func):
+      @functools.wraps(func)
+      def wrapper__make(self, table, *args, **kwargs):
+        if table.type != type_:
+          raise ValueError(f"Table type must be '{type_}'; got '{table.type}'")
+        obj = func(self, table, *args, **kwargs)
+        return obj
+      return wrapper__make
+    return decorator__make
 
-    Returns a tuple containing the recipe name and the associated Recipe
-    object.
-
-    Parameters
-    ----------
-    prototypes: Prototypes
-        A Prototypes dataclass object to pull products from when creating
-        Recipe objects.
-
+  @_make('recipe')
   def makeRecipe(self, table: 'LuaTable', expensive: bool=False) -> item.Recipe:
     """Create a Recipe object from a recipe prototype definition.
 
@@ -104,8 +105,6 @@ class ProtoReader():
         Whether or not the expensive variant should be used to create the
         Recipe. Defaults to False.
     """
-    if table.type != 'recipe':
-      raise ValueError(f"Table type must be 'recipe'; got '{table.type}'")
     name = table.name
     table = table.expensive if expensive else (table.normal or table)
     products = self.prototypes.products
