@@ -85,10 +85,11 @@ class ProtoReader():
     def decorator__make(func):
       @functools.wraps(func)
       def wrapper__make(self, table, *args, **kwargs):
-        if table.type != type_:
+        if type_ is None or type_ == table.type:
+          obj = func(self, table, *args, **kwargs)
+          return obj
+        else:
           raise ValueError(f"Table type must be '{type_}'; got '{table.type}'")
-        obj = func(self, table, *args, **kwargs)
-        return obj
       return wrapper__make
     return decorator__make
 
