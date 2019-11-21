@@ -155,6 +155,20 @@ class ProtoReader():
     subgroup[newItem.name] = newItem
     return newItem
 
+  @_make('fluid')
+  def makeFluid(self, table: 'LuaTable') -> item.Fluid:
+    """Create a Fluid object from a fluid prototype definition.
+
+    Parameters
+    ----------
+    table: LuaTable
+        A table containing a fluid prototype definition.
+    """
+    return item.Fluid(
+      table.name, table.default_temperature, table.max_temperature,
+      table.heat_capacity, table.order
+    )
+
   @_make('recipe')
   def makeRecipe(self, table: 'LuaTable', expensive: bool=False) -> item.Recipe:
     """Create a Recipe object from a recipe prototype definition.
@@ -183,20 +197,6 @@ class ProtoReader():
         for x in table.results.values()
       ]
     return item.Recipe(input_, output, table.energy_required)
-
-  @_make('fluid')
-  def makeFluid(self, table: 'LuaTable') -> item.Fluid:
-    """Create a Fluid object from a fluid prototype definition.
-
-    Parameters
-    ----------
-    table: LuaTable
-        A table containing a fluid prototype definition.
-    """
-    return item.Fluid(
-      table.name, table.default_temperature, table.max_temperature,
-      table.heat_capacity, table.order
-    )
 
 
 def initialize(protoPath: Path) -> Prototypes:
@@ -257,8 +257,6 @@ def initialize(protoPath: Path) -> Prototypes:
   # Get Fluid prototypes
   reader.loadPrototypes('fluid')
   for table in reader.luaData():
-    name = table.name
-    if table.type != 'fluid': continue
     logger.debug(f"Adding Fluid '{name}'")
     fluids[table.name] = reader.makeFluid(table)
 
