@@ -145,13 +145,7 @@ def initialize(protoPath: Path) -> Prototypes:
     del subgroups[subgroup]
 
   # Get Fluid prototypes
-  for prototype in protoPath.glob('fluid/*.lua'):
-    with prototype.open() as p: code = p.read()
-    try:
-      reader.lua.execute(code)
-    except LuaError:
-      logger.error(f"Lua error while executing '{prototype}'")
-      raise
+  reader.loadPrototypes('fluid')
   for table in reader.luaData():
     name = table.name
     if table.type != 'fluid': continue
