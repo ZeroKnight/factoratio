@@ -162,7 +162,7 @@ def initialize(protoPath: Path) -> Prototypes:
       subgroups[name] = {'order': table.order, 'parent': table.group}
     else:
       logger.debug(f"Adding Item '{name}'")
-      items[name] = {'type_': type_, 'parent': table.subgroup,
+      items[name] = {'type_': type_, 'parent': table.subgroup or 'other',
                      'order': table.order}
 
   # Link the Groups, Subgroups, and Items together
