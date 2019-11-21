@@ -200,6 +200,8 @@ class Recipe():
     self.time = time
     self.input = input_
     self.output = output
+    self._expensive = None
+    self._isExpensive = False
 
   def __repr__(self):
     return (f'{self.__class__.__name__}({self.time!r}, {self.input!r}, '
@@ -237,6 +239,28 @@ class Recipe():
     if output is None:
       output = [Ingredient(item, 1)]
     return cls(time, input_, output)
+
+  def expensive(self) -> 'Recipe':
+    """Returns the Expensive Mode variant of this Recipe."""
+    return self._expensive
+
+  def isExpensive(self) -> bool:
+    """Whether or not this Recipe is an Expensive Mode variant."""
+    return self._isExpensive
+
+  def addExpensiveMode(self, recipe: 'Recipe'):
+    """Adds the Expensive Mode variant of this Recipe to the current Recipe.
+
+    Parameters
+    ----------
+    recipe: Recipe
+        The expensive variant Recipe to add.
+    """
+    if isinstance(recipe, self.__class__):
+      self._expensive = recipe
+      recipe._isExpensive = True
+    else:
+      raise TypeError(f'Argument must be of type {self.__class__.__name__}')
 
   def getInputByName(self, name: str) -> Ingredient:
     """Get an input Ingredient by its name.
