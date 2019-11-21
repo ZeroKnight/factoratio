@@ -185,3 +185,4 @@ def initialize(protoPath: Path) -> Prototypes:
     recipes[name] = item.Recipe(input_, output, table.energy_required)
 
   logger.info(f'Loaded {len(recipes)} Recipes')
+  return result
