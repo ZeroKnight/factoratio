@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 import logging
 from pathlib import Path
 import re
-from typing import Dict, Tuple
+from typing import Dict
 
 from lupa import LuaError, LuaRuntime
 
@@ -30,9 +30,10 @@ class ProtoReader():
   Should not be used directly.
   """
 
-  def __init__(self, path: Path):
+  def __init__(self, path: Path, prototypes: Prototypes):
     self.path = path
     self.lua = LuaRuntime()
+    self.prototypes = prototypes
 
     self.lua.execute(
       f"package.path = package.path .. ';{self.path.parent.as_posix()}/?.lua'")
@@ -91,6 +92,11 @@ class ProtoReader():
         A Prototypes dataclass object to pull products from when creating
         Recipe objects.
 
+  def makeRecipe(self, table: 'LuaTable', expensive: bool=False) -> item.Recipe:
+    """Create a Recipe object from a recipe prototype definition.
+
+    Parameters
+    ----------
     table: LuaTable
         A table containing a recipe prototype definition.
 
@@ -102,7 +108,7 @@ class ProtoReader():
       raise ValueError(f"Table type must be 'recipe'; got '{table.type}'")
     name = table.name
     table = table.expensive if expensive else (table.normal or table)
-    products = prototypes.products
+    products = self.prototypes.products
     input_ = [
       item.Ingredient(products[x[1] or x.name], x[2] or x.amount)
       for x in table.ingredients.values()
@@ -114,7 +120,7 @@ class ProtoReader():
         item.Ingredient(products[x.name], x.amount, x.probability)
         for x in table.results.values()
       ]
-    return (name, item.Recipe(input_, output, table.energy_required))
+    return item.Recipe(input_, output, table.energy_required)
 
 
 def initialize(protoPath: Path) -> Prototypes:
@@ -141,7 +147,7 @@ def initialize(protoPath: Path) -> Prototypes:
   subgroups = result.subgroups
   recipes = result.recipes
 
-  reader = ProtoReader(protoPath)
+  reader = ProtoReader(protoPath, result)
   logger.info(f"Reading prototypes from '{protoPath}' ...")
 
   # TODO: Create Fuel objects
@@ -201,11 +207,11 @@ def initialize(protoPath: Path) -> Prototypes:
   for table in reader.luaData():
     # Skip recipes for hidden items
     if table.name not in items: continue
-    name, recipe = reader.makeRecipe(result, table, False)
+    recipe = reader.makeRecipe(table, expensive=False)
     if table.expensive:
-      recipe.addExpensiveMode(reader.makeRecipe(result, table, True)[1])
+      recipe.addExpensiveMode(reader.makeRecipe(table, expensive=True))
       nExp += 1
-    recipes[name] = recipe
+    recipes[table.name] = recipe
 
   logger.info(f'Loaded {len(recipes)} normal and {nExp} expensive Recipes')
   return result
