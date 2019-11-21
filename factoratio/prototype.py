@@ -93,6 +93,68 @@ class ProtoReader():
       return wrapper__make
     return decorator__make
 
+  @_make('item-group')
+  def makeGroup(self, table: 'LuaTable') -> item.ItemGroup:
+    """Create an ItemGroup object from a group prototype definition.
+
+    Parameters
+    ----------
+    table: LuaTable
+        A table containing a group prototype definition.
+    """
+    if table.name in self.prototypes.groups:
+      group = self.prototypes.groups[table.name]
+      # Fill in 'order' attribute that was deferred in makeSubGroup
+      group.order = table.order
+    else:
+      group = item.ItemGroup(table.name, table.order)
+    return group
+
+  @_make('item-subgroup')
+  def makeSubGroup(self, table: 'LuaTable') -> item.ItemGroup:
+    """Create an ItemGroup object from a subgroup prototype definition.
+
+    Parameters
+    ----------
+    table: LuaTable
+        A table containing a subgroup prototype definition.
+    """
+    if table.group in self.prototypes.groups:
+      parent = self.prototypes.groups[table.group]
+    else:
+      # Defer setting 'order' until this group is found later
+      parent = item.ItemGroup(table.group, None)
+      self.prototypes.groups[parent.name] = parent
+
+    if table.name in self.prototypes.subgroups:
+      subgroup = self.prototypes.subgroups[table.name]
+      # Fill in 'parent' and 'order' that was deferred in makeItem
+      subgroup.parent = parent
+      subgroup.order = table.order
+    else:
+      subgroup = item.ItemGroup(table.name, table.order, parent)
+    parent[subgroup.name] = subgroup
+    return subgroup
+
+  @_make(None)
+  def makeItem(self, table: 'LuaTable') -> item.Item:
+    """Create an Item object from an item prototype definition.
+
+    Parameters
+    ----------
+    table: LuaTable
+        A table containing an item prototype definition.
+    """
+    if table.subgroup in self.prototypes.subgroups:
+      subgroup = self.prototypes.subgroups[table.subgroup]
+    else:
+      # Defer setting 'parent' and 'order' until this subgroup is found later
+      subgroup = item.ItemGroup(table.subgroup, None, None)
+      self.prototypes.subgroups[subgroup.name] = subgroup
+    newItem = item.Item(table.name, table.type, subgroup, table.order)
+    subgroup[newItem.name] = newItem
+    return newItem
+
   @_make('recipe')
   def makeRecipe(self, table: 'LuaTable', expensive: bool=False) -> item.Recipe:
     """Create a Recipe object from a recipe prototype definition.
@@ -161,23 +223,13 @@ def initialize(protoPath: Path) -> Prototypes:
     type_ = table.type
     if type_ == 'item-group':
       logger.debug(f"Adding Group '{name}'")
-      groups[name] = item.ItemGroup(name, table.order)
-    # Defer creating the actual objects until after all (Sub)Groups are known
+      groups[name] = reader.makeGroup(table)
     elif type_ == 'item-subgroup':
       logger.debug(f"Adding Subgroup '{name}'")
-      subgroups[name] = {'order': table.order, 'parent': table.group}
+      subgroups[name] = reader.makeSubGroup(table)
     else:
       logger.debug(f"Adding Item '{name}'")
-      items[name] = {'type_': type_, 'parent': table.subgroup or 'other',
-                     'order': table.order}
-
-  # Link the Groups, Subgroups, and Items together
-  for k, v in subgroups.items():
-    subgroups[k] = item.ItemGroup(k, v['order'], groups[v['parent']])
-    groups[v['parent']][k] = subgroups[k]
-  for k, v in items.items():
-    items[k] = item.Item(k, v['type_'], subgroups[v['parent']], v['order'])
-    subgroups[v['parent']][k] = items[k]
+      items[name] = reader.makeItem(table)
 
   # Remove Subgroups with no Items; i.e. all its Items were "hidden"
   hidden_subgroups = []
