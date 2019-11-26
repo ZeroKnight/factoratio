@@ -8,6 +8,7 @@ from typing import Dict
 
 from lupa import LuaError, LuaRuntime
 
+from factoratio.fuel import Fuel
 import factoratio.item as item
 
 logger = logging.getLogger('factoratio')
@@ -16,6 +17,7 @@ logger = logging.getLogger('factoratio')
 class Prototypes():
   items: Dict[str, item.Item] = field(default_factory=dict)
   fluids: Dict[str, item.Fluid] = field(default_factory=dict)
+  fuels: Dict[str, Fuel] = field(default_factory=dict)
   products: collections.ChainMap = field(init=False, repr=False)
   groups: Dict[str, item.ItemGroup] = field(default_factory=dict)
   subgroups: Dict[str, item.ItemGroup] = field(default_factory=dict)
@@ -169,6 +171,17 @@ class ProtoReader():
       table.heat_capacity, table.order
     )
 
+  @_make(None)
+  def makeFuel(self, table: 'LuaTable') -> Fuel:
+    """Create a Fuel object from an item prototype definition.
+
+    Parameters
+    ----------
+    table: LuaTable
+        A table containing an item prototype definition with fuel attributes.
+    """
+    return Fuel(table.name, table.fuel_value)
+
   @_make('recipe')
   def makeRecipe(self, table: 'LuaTable', expensive: bool=False) -> item.Recipe:
     """Create a Recipe object from a recipe prototype definition.
@@ -218,6 +231,7 @@ def initialize(protoPath: Path) -> Prototypes:
   result = Prototypes()
   items = result.items
   fluids = result.fluids
+  fuels = result.fuels
   products = result.products
   groups = result.groups
   subgroups = result.subgroups
@@ -226,7 +240,6 @@ def initialize(protoPath: Path) -> Prototypes:
   reader = ProtoReader(protoPath, result)
   logger.info(f"Reading prototypes from '{protoPath}' ...")
 
-  # TODO: Create Fuel objects
   # Get Item, Group, and Subgroup prototype definitions
   reader.loadPrototypes('item')
   for table in reader.luaData():
@@ -244,6 +257,8 @@ def initialize(protoPath: Path) -> Prototypes:
     else:
       logger.debug(f"Adding Item '{name}'")
       items[name] = reader.makeItem(table)
+      if table.fuel_value:
+        fuels[name] = reader.makeFuel(table)
 
   # Remove Groups and Subgroups that ended up being empty due to hidden Items
   for name, subgroup in dict(subgroups).items():

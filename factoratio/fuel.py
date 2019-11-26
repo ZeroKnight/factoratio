@@ -87,12 +87,3 @@ class Burner():
         The fuel being burned.
     """
     return rate * fuel.burnTime(self.energyUsage)
-
-# TODO: Move this to implementation
-# Define the Fuel types
-# wood = Fuel('Wood', 2)
-# coal = Fuel('Coal', 4)
-# solid = Fuel('Solid Fuel', 12)
-# rocket = Fuel('Rocket Fuel', 100)
-# nuclear = Fuel('Nuclear Fuel', 1210)
-# uranium = Fuel('Uranium Fuel Cell', 8000)
