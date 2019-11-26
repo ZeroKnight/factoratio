@@ -1,5 +1,9 @@
+from dataclasses import dataclass
+from typing import Union
+
 from factoratio.util import Joule, Watt
 
+@dataclass
 class Fuel():
   """Class representing a fuel source.
 
@@ -15,12 +19,14 @@ class Fuel():
       The total energy contained in the fuel, in Joules.
   """
 
-  def __init__(self, name: str, energy: Joule):
-    self.name = name
-    self.energy = energy
+  name: str
+  energy: Union[Joule, str]
 
-  def __repr__(self):
-    return f'{self.__class__.__name__}({self.name!r}, {self.energy!r})'
+  def __post_init__(self):
+    if isinstance(self.energy, str):
+      self.energy = Joule(self.energy)
+    else:
+      raise TypeError('energy must be of type str or Joule')
 
   def __str__(self):
     return f'{self.name}'
