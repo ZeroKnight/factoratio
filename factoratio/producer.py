@@ -1,6 +1,6 @@
 from factoratio.fuel import Burner, Fuel
 from factoratio.item import Ingredient, Recipe
-from factoratio.util import Watt
+from factoratio.util import Joule, Watt
 
 class Module():
   """A module for a producer.
@@ -137,9 +137,10 @@ class Producer():
     recipe: Recipe
         The recipe to craft.
     """
-    craftTime = recipe.time / self.craftSpeed * self.speedMultiplier()
+    craftTime = recipe.time / (self.craftSpeed * self.speedMultiplier())
     energyMult = self.energyMultiplier()
-    energyConsumed = (self.drain + self.energyUsage * energyMult) * craftTime
+    energyConsumed = Joule(
+      (self.drain + self.energyUsage * energyMult).value) * craftTime
     # NOTE: Pollution stat is per minute
     pollutionCreated = (self.pollution * self.pollutionMultiplier() *
                        energyMult * (craftTime / 60))
