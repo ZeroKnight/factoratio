@@ -122,7 +122,7 @@ class Producer():
     """Crafts the given input recipe with the producer's current stats.
 
     Returns a dict with the results of the craft: the craft duration, the
-    recipe output, energy consumed and pollution produced.
+    recipe output, energy consumed, and pollution produced.
 
     Parameters
     ----------
@@ -132,8 +132,9 @@ class Producer():
     craftTime = recipe.time / self.craftSpeed * self.speedMultiplier()
     energyMult = self.energyMultiplier()
     energyConsumed = (self.drain + self.energyUsage * energyMult) * craftTime
-    # FIXME: pollution value is per minute
-    pollutionCreated = self.pollution * self.pollutionMultiplier() * energyMult
+    # NOTE: Pollution stat is per minute
+    pollutionCreated = (self.pollution * self.pollutionMultiplier() *
+                       energyMult * (craftTime / 60))
 
     return {'duration': craftTime, 'output': recipe.output,
             'energy': energyConsumed, 'pollution': pollutionCreated}
