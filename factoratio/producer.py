@@ -118,6 +118,14 @@ class Producer():
     """Return the producer's pollution multiplier."""
     return self._getMultiplier('pollution')
 
+  def effectivePollutionMultiplier(self) -> float:
+    """Return the producer's effective pollution multiplier.
+
+    The effective pollution multiplier is the product of the pollution and
+    energy multipliers.
+    """
+    return self.pollutionMultiplier() * self.energyMultiplier()
+
   def craft(self, recipe: Recipe) -> dict:
     """Crafts the given input recipe with the producer's current stats.
 
