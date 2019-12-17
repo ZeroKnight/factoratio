@@ -99,14 +99,14 @@ class Producer():
     multiplier = 1
     for m in self.modules:
       if isinstance(m, Module):
-        multiplier += m.__dict__[category]
+        multiplier += getattr(m, category)
     return multiplier
 
   def speedMultiplier(self) -> float:
     """Return the producer's crafting speed multiplier."""
     return self._getMultiplier('speed')
 
-  def energyMultiplier(self) -> Watt:
+  def energyMultiplier(self) -> float:
     """Return the producer's energy usage multiplier."""
     return self._getMultiplier('energy')
 
