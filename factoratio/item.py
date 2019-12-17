@@ -238,7 +238,7 @@ class Recipe():
       input_ = []
     if output is None:
       output = [Ingredient(item, 1)]
-    return cls(time, input_, output)
+    return cls(input_, output, time)
 
   def expensive(self) -> 'Recipe':
     """Returns the Expensive Mode variant of this Recipe."""
