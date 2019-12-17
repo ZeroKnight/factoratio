@@ -80,12 +80,12 @@ class Producer():
       The amount of energy constantly consumed by this producer, just by
       being connected to the power grid.
 
-  pollution: int
+  pollution: float
       The amount of pollution produced per minute while operating.
   """
 
   def __init__(self, name: str, craftSpeed: float, maxSlots: int,
-               energyUsage: Watt, drain: Watt, pollution: int):
+               energyUsage: Watt, drain: Watt, pollution: float):
     self.name = name
     self.craftSpeed = craftSpeed
     self.maxSlots = maxSlots
