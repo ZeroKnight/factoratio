@@ -259,11 +259,12 @@ def initialize(protoPath: Path) -> Prototypes:
         fuels[table.name] = reader.makeFuel(table)
 
   # Remove Groups and Subgroups that ended up being empty due to hidden Items
+  # A copy is necessary since we're removing things
   for name, subgroup in dict(subgroups).items():
     if not len(subgroup):
       logger.debug(f"Removing empty Subgroup '{subgroup}'")
-      del groups[subgroup.parent.name][subgroup.name]
-      del subgroups[subgroup.name]
+      del groups[subgroup.parent.name][name]
+      del subgroups[name]
   for name, group in dict(groups).items():
     if not len(group):
       logger.debug(f"Removing empty Group '{group}'")
