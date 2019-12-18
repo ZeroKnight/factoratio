@@ -155,7 +155,8 @@ class Fluid():
 class Ingredient():
   """Class representing a crafting ingredient.
 
-  An Ingredient is a specific Item in some quantity for use in a Recipe.
+  An Ingredient is a specific Item or Fluid in some quantity for use in a
+  Recipe.
 
   Attributes
   ----------
@@ -163,7 +164,11 @@ class Ingredient():
       The Item or Fluid to be used as an Ingredient.
 
   count: int
-      The amount of the Item or Fluid for this Ingredient.
+      The amount of the Item or Fluid for this Ingredient. Defaults to 1.
+
+  probability: float
+      The chance that this Ingredient is returned in a Recipe's output.
+      Expressed as a decimal percentage. Defaults to 1.
   """
 
   what: Union[Item, Fluid]
@@ -268,7 +273,7 @@ class Recipe():
     Returns None if the Item could not be found by the given name.
     """
     for ingredient in self.input:
-      if ingredient.item.name == name:
+      if ingredient.what.name == name:
         return ingredient
     return None
 
@@ -278,6 +283,6 @@ class Recipe():
     Returns None if the item could not be found by the given name.
     """
     for ingredient in self.output:
-      if ingredient.item.name == name:
+      if ingredient.what.name == name:
         return ingredient
     return None
