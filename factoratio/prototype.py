@@ -246,19 +246,17 @@ def initialize(protoPath: Path) -> Prototypes:
     if table.flags and 'hidden' in table.flags.values():
       logger.debug(f"Skipping hidden Item '{table.name}'")
       continue
-    name = table.name
-    type_ = table.type
-    if type_ == 'item-group':
-      logger.debug(f"Adding Group '{name}'")
-      groups[name] = reader.makeGroup(table)
-    elif type_ == 'item-subgroup':
-      logger.debug(f"Adding Subgroup '{name}'")
-      subgroups[name] = reader.makeSubGroup(table)
+    if table.type == 'item-group':
+      logger.debug(f"Adding Group '{table.name}'")
+      groups[table.name] = reader.makeGroup(table)
+    elif table.type == 'item-subgroup':
+      logger.debug(f"Adding Subgroup '{table.name}'")
+      subgroups[table.name] = reader.makeSubGroup(table)
     else:
-      logger.debug(f"Adding Item '{name}'")
-      items[name] = reader.makeItem(table)
+      logger.debug(f"Adding Item '{table.name}'")
+      items[table.name] = reader.makeItem(table)
       if table.fuel_value:
-        fuels[name] = reader.makeFuel(table)
+        fuels[table.name] = reader.makeFuel(table)
 
   # Remove Groups and Subgroups that ended up being empty due to hidden Items
   for name, subgroup in dict(subgroups).items():
