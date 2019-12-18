@@ -274,7 +274,7 @@ def initialize(protoPath: Path) -> Prototypes:
   # Get Fluid prototypes
   reader.loadPrototypes('fluid')
   for table in reader.luaData():
-    logger.debug(f"Adding Fluid '{name}'")
+    logger.debug(f"Adding Fluid '{table.name}'")
     fluids[table.name] = reader.makeFluid(table)
 
   logger.info(f'Loaded {len(groups)} Groups, {len(subgroups)} Subgroups, '
