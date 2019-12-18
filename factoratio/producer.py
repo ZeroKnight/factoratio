@@ -225,9 +225,11 @@ class Producer():
   def rates(self, recipe: Recipe, count: int=1) -> dict:
     """Calculate all rates for this producer.
 
-    Generates a report of every rate associated with this producer, such as
+    Generates a report of every rate associated with this producer, including
     energy consumption, pollution generated, individual items consumed and
-    produced, etc.
+    produced, and the count of producers used.
+
+    Rates are given as units per second.
 
     Parameters
     ----------
@@ -242,17 +244,17 @@ class Producer():
     duration = craftResult['duration']
     consumed, produced = [], []
     for ingredient in recipe.input:
-      name = ingredient.item.name
+      name = ingredient.what.name
       consumed.append((ingredient, self.consumptionRate(recipe, name, count)))
     for ingredient in recipe.output:
-      name = ingredient.item.name
+      name = ingredient.what.name
       produced.append((ingredient, self.productionRate(recipe, name, count)))
 
     return {
       'producers': count,
       'consumed': consumed,
       'produced': produced,
-      'energy': craftResult['energy'] / duration * count,
+      'energy': Watt(craftResult['energy'].value) / duration * count,
       'pollution': craftResult['pollution'] / duration * count
     }
 
@@ -266,7 +268,8 @@ class BurnerProducer(Producer, Burner):
   def rates(self, recipe: Recipe, fuel: Fuel, count: int=1) -> dict:
     """Calculate all rates for this producer.
 
-    Extended from the Producer base class to include fuel usage.
+    Extended from the Producer base class to include the amount of Fuel
+    burned.
 
     Parameters
     ----------
@@ -281,7 +284,7 @@ class BurnerProducer(Producer, Burner):
         acts as a multiplier. Defaults to one.
     """
     rateDict = super().rates(recipe, count)
-    rateDict['fuel'] = rateDict['energy'] / fuel.energy.value
+    rateDict['fuel'] = rateDict['energy'].value / fuel.energy.value
     return rateDict
 
   def productsPerFuel(self, recipe: Recipe, itemName: str, fuel: Fuel,
