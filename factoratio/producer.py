@@ -343,7 +343,7 @@ class MiningDrill(Producer):
     """
     if itemName is None:
       if len(recipe.output) == 1:
-        itemName = recipe.output[0].item.name
+        itemName = recipe.output[0].what.name
       else:
         raise ValueError('Cannot use default itemName value when output '
                          'contains more than one product.')
@@ -367,7 +367,7 @@ class MiningDrill(Producer):
     """
     if itemName is None:
       if len(recipe.output) == 1:
-        itemName = recipe.output[0].item.name
+        itemName = recipe.output[0].what.name
       else:
         raise ValueError('Cannot use default itemName value when output '
                          'contains more than one product.')
@@ -398,7 +398,7 @@ class MiningDrill(Producer):
     """
     if itemName is None:
       if len(recipe.output) == 1:
-        itemName = recipe.output[0].item.name
+        itemName = recipe.output[0].what.name
       else:
         raise ValueError('Cannot use default itemName value when output '
                          'contains more than one product.')
@@ -428,7 +428,7 @@ class MiningDrill(Producer):
     """
     if itemName is None:
       if len(recipe.output) == 1:
-        ingredient = recipe.output[0].item.name
+        ingredient = recipe.output[0].what.name
       else:
         raise ValueError('Cannot use default itemName value when output '
                          'contains more than one product.')
