@@ -46,9 +46,9 @@ class Module():
     self.pollution = pollution
 
   def __repr__(self):
-    return f'{__class__.__name__}({self.name!r}, {self.tier!r}, ' \
-           f'{self.energy!r}, {self.speed!r}, {self.productivity!r}, ' \
-           f'{self.pollution!r})'
+    return (f'{__class__.__name__}({self.name!r}, {self.tier!r}, '
+            f'{self.energy!r}, {self.speed!r}, {self.productivity!r}, '
+            f'{self.pollution!r})')
 
   def __str__(self):
       return f'Tier {self.tier} {self.name} Module'
@@ -94,9 +94,9 @@ class Producer():
     self.pollution = pollution
 
   def __repr__(self):
-    return f'{self.__class__.__name__}({self.name}, {self.craftSpeed}, ' \
-           f'{self.maxSlots}, {self.energyUsage}, {self.drain}, ' \
-           f'{self.pollution})'
+    return (f'{self.__class__.__name__}({self.name!r}, {self.craftSpeed!r}, '
+            f'{self.maxSlots!r}, {self.energyUsage!r}, {self.drain!r}, '
+            f'{self.pollution!r})')
 
   def __str__(self):
     return self.name
