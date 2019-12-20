@@ -54,7 +54,6 @@ class Module():
       return f'Tier {self.tier} {self.name} Module'
 
 
-# TODO: Include productivity bonus in relevent methods
 class Producer():
   """Base class for entities that produce an item as output.
 
@@ -96,11 +95,11 @@ class Producer():
 
   def _getMultiplier(self, category: str) -> float:
     """Return the multiplier of the given category from module effects."""
-    multiplier = 1
+    multiplier = 1.0
     for m in self.modules:
       if isinstance(m, Module):
         multiplier += getattr(m, category)
-    return multiplier
+    return round(multiplier, 6) # XXX: Hack around 1.1 + 0.1 and similar
 
   def speedMultiplier(self) -> float:
     """Return the producer's crafting speed multiplier."""
@@ -165,7 +164,8 @@ class Producer():
         acts as a multiplier. Defaults to one.
     """
     ingredient = recipe.getOutputByName(itemName)
-    return count * ingredient.count / self.craft(recipe)['duration']
+    return (count * ingredient.count * self.productivityMultiplier()
+            / self.craft(recipe)['duration'])
 
   def productionRateInverse(self, recipe: Recipe, itemName: str,
                             ips: float=1.0) -> float:
@@ -183,7 +183,8 @@ class Producer():
         The target production rate to meet. Defaults to one item per second.
     """
     ingredient = recipe.getOutputByName(itemName)
-    return ips * self.craft(recipe)['duration'] / ingredient.count
+    return (ips * self.craft(recipe)['duration'] /
+            (ingredient.count * self.productivityMultiplier()))
 
   def consumptionRate(self, recipe: Recipe, itemName: str,
                       count: int=1) -> float:
