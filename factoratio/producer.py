@@ -312,9 +312,9 @@ class BurnerProducer(Producer, Burner):
         The fuel being burned.
 
     count: int, optional
-        The number of furnaces running concurrently. Defaults to one.
+        The number of producers running concurrently. Defaults to one.
     """
-    return (fuel.burnTime(self.energyConsumption)
+    return (fuel.burnTime(self.energyUsage)
             / self.productionRate(recipe, itemName, count))
 
 
