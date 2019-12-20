@@ -3,9 +3,9 @@ from factoratio.item import Ingredient, Recipe
 from factoratio.util import Joule, Watt
 
 class Module():
-  """A module for a producer.
+  """A module for a Producer.
 
-  Modifies various aspects of the producer's operation including energy
+  Modifies various aspects of the Producer's operation including energy
   consumption, operation speed, productivity bonus, and pollution output.
 
   All modifiers are a positive or negative percentage expressed as a
@@ -60,23 +60,23 @@ class Producer():
   Attributes
   ----------
   name: str
-      The name of this producer. Can be anything, but is typically the
+      The name of this Producer. Can be anything, but is typically the
       in-game name.
 
   craftSpeed: float
-      The speed at which this producer crafts a given recipe; the recipe
+      The speed at which this Producer crafts a given recipe; the recipe
       crafting time is divided by this speed to yield the total crafting
       time.
 
   maxSlots: int
-      The total number of module slots this producer supports.
+      The total number of module slots this Producer supports.
 
   energyUsage: factoratio.util.Watt
-      The amount of energy consumed by this producer per second while
+      The amount of energy consumed by this Producer per second while
       actively working, i.e. for the duration of a crafting cycle.
 
   drain: factoratio.util.Watt
-      The amount of energy constantly consumed by this producer, just by
+      The amount of energy constantly consumed by this Producer, just by
       being connected to the power grid.
 
   pollution: float
@@ -110,23 +110,23 @@ class Producer():
     return round(multiplier, 6) # XXX: Hack around 1.1 + 0.1 and similar
 
   def speedMultiplier(self) -> float:
-    """Return the producer's crafting speed multiplier."""
+    """Return the Producer's crafting speed multiplier."""
     return self._getMultiplier('speed')
 
   def energyMultiplier(self) -> float:
-    """Return the producer's energy usage multiplier."""
+    """Return the Producer's energy usage multiplier."""
     return self._getMultiplier('energy')
 
   def productivityMultiplier(self) -> float:
-    """Return the producer's added productivity multiplier."""
+    """Return the Producer's added productivity multiplier."""
     return self._getMultiplier('productivity')
 
   def pollutionMultiplier(self) -> float:
-    """Return the producer's pollution multiplier."""
+    """Return the Producer's pollution multiplier."""
     return self._getMultiplier('pollution')
 
   def effectivePollutionMultiplier(self) -> float:
-    """Return the producer's effective pollution multiplier.
+    """Return the Producer's effective pollution multiplier.
 
     The effective pollution multiplier is the product of the pollution and
     energy multipliers.
@@ -134,7 +134,7 @@ class Producer():
     return self.pollutionMultiplier() * self.energyMultiplier()
 
   def craft(self, recipe: Recipe) -> dict:
-    """Crafts the given input recipe with the producer's current stats.
+    """Crafts the given input recipe with the Producer's current stats.
 
     Returns a dict with the results of the craft: the craft duration, the
     recipe output, energy consumed, and pollution produced.
@@ -168,7 +168,7 @@ class Producer():
         The specific recipe product to obtain the production rate for.
 
     count: int, optional
-        The number of identical producers concurrently crafting this recipe;
+        The number of identical Producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
     ingredient = recipe.getOutputByName(itemName)
@@ -177,7 +177,7 @@ class Producer():
 
   def productionRateInverse(self, recipe: Recipe, itemName: str,
                             ips: float=1.0) -> float:
-    """Return the number of these producers needed to reach the given rate.
+    """Return the number of these Producers needed to reach the given rate.
 
     Parameters
     ----------
@@ -207,7 +207,7 @@ class Producer():
         The specific recipe product to obtain the consumption rate for.
 
     count: int, optional
-        The number of identical producers concurrently crafting this recipe;
+        The number of identical Producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
     ingredient = recipe.getInputByName(itemName)
@@ -215,7 +215,7 @@ class Producer():
 
   def consumptionRateInverse(self, recipe: Recipe, itemName: str,
                             ips: float=1.0) -> float:
-    """Return the number of these producers needed to reach the given rate.
+    """Return the number of these Producers needed to reach the given rate.
 
     Parameters
     ----------
@@ -232,11 +232,11 @@ class Producer():
     return ips * self.craft(recipe)['duration'] / ingredient.count
 
   def rates(self, recipe: Recipe, count: int=1) -> dict:
-    """Calculate all rates for this producer.
+    """Calculate all rates for this Producer.
 
-    Generates a report of every rate associated with this producer, including
+    Generates a report of every rate associated with this Producer, including
     energy consumption, pollution generated, individual items consumed and
-    produced, and the count of producers used.
+    produced, and the count of Producers used.
 
     Rates are given as units per second.
 
@@ -246,7 +246,7 @@ class Producer():
         The recipe to base the rates on.
 
     count: int, optional
-        The number of identical producers concurrently crafting this recipe;
+        The number of identical Producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
     craftResult = self.craft(recipe)
@@ -275,7 +275,7 @@ class BurnerProducer(Producer, Burner):
   """
 
   def rates(self, recipe: Recipe, fuel: Fuel, count: int=1) -> dict:
-    """Calculate all rates for this producer.
+    """Calculate all rates for this Producer.
 
     Extended from the Producer base class to include the amount of Fuel
     burned.
@@ -289,7 +289,7 @@ class BurnerProducer(Producer, Burner):
         The fuel being burned.
 
     count: int, optional
-        The number of identical producers concurrently crafting this recipe;
+        The number of identical Producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
     rateDict = super().rates(recipe, count)
@@ -312,7 +312,7 @@ class BurnerProducer(Producer, Burner):
         The fuel being burned.
 
     count: int, optional
-        The number of producers running concurrently. Defaults to one.
+        The number of Producers running concurrently. Defaults to one.
     """
     return (fuel.burnTime(self.energyUsage)
             / self.productionRate(recipe, itemName, count))
@@ -347,7 +347,7 @@ class MiningDrill(Producer):
         product.
 
     count: int, optional
-        The number of identical producers concurrently crafting this recipe;
+        The number of identical Producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
     if itemName is None:
@@ -360,7 +360,7 @@ class MiningDrill(Producer):
 
   def productionRateInverse(self, recipe: Recipe, itemName: str=None,
                             ips: float=1.0) -> float:
-    """Return the number of these producers needed to reach the given rate.
+    """Return the number of these Producers needed to reach the given rate.
 
     Parameters
     ----------
@@ -402,7 +402,7 @@ class MiningDrill(Producer):
         product.
 
     count: int, optional
-        The number of identical producers concurrently crafting this recipe;
+        The number of identical Producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
     if itemName is None:
@@ -415,7 +415,7 @@ class MiningDrill(Producer):
 
   def consumptionRateInverse(self, recipe: Recipe, itemName: str,
                             ips: float=1.0) -> float:
-    """Return the number of these producers needed to reach the given rate.
+    """Return the number of these Producers needed to reach the given rate.
 
     Mining drills typically only "consume" the resource that they're placed
     on top of, which is equivalent to its output. Typically
@@ -444,9 +444,9 @@ class MiningDrill(Producer):
     return super().consumptionRateInverse(recipe, itemName, ips)
 
   def rates(self, recipe: Recipe, count: int=1) -> dict:
-    """Calculate all rates for this producer.
+    """Calculate all rates for this Producer.
 
-    Generates a report of every rate associated with this producer, such as
+    Generates a report of every rate associated with this Producer, such as
     energy consumption, pollution generated, individual items consumed and
     produced, etc.
 
@@ -459,7 +459,7 @@ class MiningDrill(Producer):
         The recipe to base the rates on, usually from Recipe.miningRecipe.
 
     count: int, optional
-        The number of identical producers concurrently crafting this recipe;
+        The number of identical Producers concurrently crafting this recipe;
         acts as a multiplier. Defaults to one.
     """
     rateDict = super().rates(recipe, count)
