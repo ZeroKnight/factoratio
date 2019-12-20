@@ -290,6 +290,10 @@ def initialize(protoPath: Path) -> Prototypes:
       recipe.addExpensiveMode(reader.makeRecipe(table, expensive=True))
       nExp += 1
     recipes[table.name] = recipe
+  for ore in ('copper-ore', 'iron-ore', 'stone', 'coal'):
+    recipes[ore] = item.Recipe.miningRecipe(1, items[ore])
+  recipes['uranium-ore'] = item.Recipe.miningRecipe(2, items['uranium-ore'],
+    [item.Ingredient(fluids['sulfuric-acid'], 1)])
 
   logger.info(f'Loaded {len(recipes)} normal and {nExp} expensive Recipes')
   return result
