@@ -468,7 +468,7 @@ class MiningDrill(Producer):
     return rateDict
 
 
-class BurnerMiningDrill(MiningDrill, Burner):
+class BurnerMiningDrill(MiningDrill, BurnerProducer):
   """A class representing a burner mining drill.
 
   A burner mining drill is simply a MiningDrill that is powered by burning a
