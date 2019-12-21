@@ -196,12 +196,15 @@ class Recipe():
       List of Ingredients for recipe input and output.
 
   time: float
-      The time for the recipe to complete. Modified by a producer's crafting
-      speed. Defaults to 0.5 game seconds.
+      The time for the recipe to complete. Modified by a Producer's crafting
+      speed.
+
+  input_, output: List of Ingredients
+      List of Ingredients for Recipe input and output.
   """
 
-  def __init__(self, input_: List[Ingredient], output: List[Ingredient],
-               time: float=0.5):
+  def __init__(self, time: float, input_: List[Ingredient],
+               output: List[Ingredient]):
     self.time = time
     self.input = input_
     self.output = output
@@ -215,7 +218,7 @@ class Recipe():
   @classmethod
   def miningRecipe(cls, time: float, item: Item, input_: List[Ingredient]=None,
                    output: List[Ingredient]=None):
-    """Alternative constructor for mining drill recipes.
+    """Alternative constructor for mining drill Recipes.
 
     Typically a mining drill produces whatever resource it is placed on, and
     in vanilla Factorio, only uranium ore has an input requirement. Thus,
@@ -236,7 +239,7 @@ class Recipe():
         an empty list.
 
     output: List of Ingredients, optional
-        The products that the drill extracts. Defaults to the Item parameter
+        The products that the drill extracts. Defaults to the item parameter
         with a quantity of one.
     """
     if input_ is None:

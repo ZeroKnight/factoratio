@@ -209,7 +209,7 @@ class ProtoReader():
         item.Ingredient(products[x.name], x.amount, x.probability)
         for x in table.results.values()
       ]
-    return item.Recipe(input_, output, table.energy_required or 0.5)
+    return item.Recipe(table.energy_required or 0.5, input_, output)
 
 
 def initialize(protoPath: Path) -> Prototypes:
