@@ -55,7 +55,7 @@ class Module():
 
 
 class Producer():
-  """Base class for entities that produce an item as output.
+  """Base class for entities that produce an Item as output.
 
   Attributes
   ----------
@@ -64,7 +64,7 @@ class Producer():
       in-game name.
 
   craftSpeed: float
-      The speed at which this Producer crafts a given recipe; the recipe
+      The speed at which this Producer crafts a given Recipe; the Recipe
       crafting time is divided by this speed to yield the total crafting
       time.
 
@@ -134,15 +134,15 @@ class Producer():
     return self.pollutionMultiplier() * self.energyMultiplier()
 
   def craft(self, recipe: Recipe) -> dict:
-    """Crafts the given input recipe with the Producer's current stats.
+    """Crafts the given input Recipe with the Producer's current stats.
 
     Returns a dict with the results of the craft: the craft duration, the
-    recipe output, energy consumed, and pollution produced.
+    Recipe output, energy consumed, and pollution produced.
 
     Parameters
     ----------
     recipe: Recipe
-        The recipe to craft.
+        The Recipe to craft.
     """
     craftTime = recipe.time / (self.craftSpeed * self.speedMultiplier())
     energyMult = self.energyMultiplier()
@@ -155,20 +155,22 @@ class Producer():
     return {'duration': craftTime, 'output': recipe.output,
             'energy': energyConsumed, 'pollution': pollutionCreated}
 
+  # TODO: For this and all subclasses, have itemName default to None, and pick the first output
+  # actually, production functions don't need to care about WHICH output...
   def productionRate(self, recipe: Recipe, itemName: str,
                      count: int=1) -> float:
-    """Return the rate that an item is produced, in items per second.
+    """Return the rate that an Item is produced, in items per second.
 
     Parameters
     ----------
     recipe: Recipe
-        The recipe to examine.
+        The Recipe to examine.
 
     itemName: str
-        The specific recipe product to obtain the production rate for.
+        The specific Recipe product to obtain the production rate for.
 
     count: int, optional
-        The number of identical Producers concurrently crafting this recipe;
+        The number of identical Producers concurrently crafting this Recipe;
         acts as a multiplier. Defaults to one.
     """
     ingredient = recipe.getOutputByName(itemName)
@@ -182,10 +184,10 @@ class Producer():
     Parameters
     ----------
     recipe: Recipe
-        The recipe to examine.
+        The Recipe to examine.
 
     itemName: str
-        The specific recipe product being produced.
+        The specific Recipe product being produced.
 
     ips: float, optional
         The target production rate to meet. Defaults to one item per second.
@@ -196,18 +198,18 @@ class Producer():
 
   def consumptionRate(self, recipe: Recipe, itemName: str,
                       count: int=1) -> float:
-    """Return the rate that an item is consumed, in items per second.
+    """Return the rate that an Item is consumed, in items per second.
 
     Parameters
     ----------
     recipe: Recipe
-        The recipe to examine.
+        The Recipe to examine.
 
     itemName: str
-        The specific recipe product to obtain the consumption rate for.
+        The specific Recipe product to obtain the consumption rate for.
 
     count: int, optional
-        The number of identical Producers concurrently crafting this recipe;
+        The number of identical Producers concurrently crafting this Recipe;
         acts as a multiplier. Defaults to one.
     """
     ingredient = recipe.getInputByName(itemName)
@@ -220,10 +222,10 @@ class Producer():
     Parameters
     ----------
     recipe: Recipe
-        The recipe to examine.
+        The Recipe to examine.
 
     itemName: str
-        The specific recipe ingredient being consumed.
+        The specific Recipe ingredient being consumed.
 
     ips: float, optional
         The target consumption rate to meet. Defaults to one item per second.
@@ -243,10 +245,10 @@ class Producer():
     Parameters
     ----------
     recipe: Recipe
-        The recipe to base the rates on.
+        The Recipe to base the rates on.
 
     count: int, optional
-        The number of identical Producers concurrently crafting this recipe;
+        The number of identical Producers concurrently crafting this Recipe;
         acts as a multiplier. Defaults to one.
     """
     craftResult = self.craft(recipe)
@@ -283,13 +285,13 @@ class BurnerProducer(Producer, Burner):
     Parameters
     ----------
     recipe: Recipe
-        The recipe to base the rates on.
+        The Recipe to base the rates on.
 
     fuel: factoratio.fuel.Fuel
         The fuel being burned.
 
     count: int, optional
-        The number of identical Producers concurrently crafting this recipe;
+        The number of identical Producers concurrently crafting this Recipe;
         acts as a multiplier. Defaults to one.
     """
     rateDict = super().rates(recipe, count)
@@ -298,18 +300,18 @@ class BurnerProducer(Producer, Burner):
 
   def productsPerFuel(self, recipe: Recipe, itemName: str, fuel: Fuel,
                       count: int=1) -> float:
-    """The number of items produced per unit of fuel burned.
+    """The number of Items produced per unit of Fuel burned.
 
     Parameters
     ----------
     recipe: Recipe
-        The recipe to examine.
+        The Recipe to examine.
 
     itemName: str
-        The specific recipe ingredient being produced.
+        The specific Recipe ingredient being produced.
 
     fuel: factoratio.fuel.Fuel
-        The fuel being burned.
+        The Fuel being burned.
 
     count: int, optional
         The number of Producers running concurrently. Defaults to one.
@@ -331,7 +333,7 @@ class MiningDrill(Producer):
 
   def productionRate(self, recipe: Recipe, itemName: str=None,
                      count: int=1) -> float:
-    """Return the rate that an item is produced, in items per second.
+    """Return the rate that an Item is produced, in items per second.
 
     Typically Recipe.miningRecipe is used to construct the Recipe object, but
     this is not a hard requirement.
@@ -339,15 +341,15 @@ class MiningDrill(Producer):
     Parameters
     ----------
     recipe: Recipe
-        The recipe to examine.
+        The Recipe to examine.
 
     itemName: str, optional
-        The specific recipe product to obtain the production rate for. If
+        The specific Recipe product to obtain the production rate for. If
         unspecified, assumes the output item as long as it's the only
         product.
 
     count: int, optional
-        The number of identical Producers concurrently crafting this recipe;
+        The number of identical Producers concurrently crafting this Recipe;
         acts as a multiplier. Defaults to one.
     """
     if itemName is None:
@@ -365,10 +367,10 @@ class MiningDrill(Producer):
     Parameters
     ----------
     recipe: Recipe
-        The recipe to examine.
+        The Recipe to examine.
 
-    itemName: str
-        The specific recipe product being produced. If unspecified, assumes
+    itemName: str, optional
+        The specific Recipe product being produced. If unspecified, assumes
         the output item as long as it's the only product.
 
     ips: float, optional
@@ -384,7 +386,7 @@ class MiningDrill(Producer):
 
   def consumptionRate(self, recipe: Recipe, itemName: str=None,
                       count: int=1) -> float:
-    """Return the rate that an item is consumed, in items per second.
+    """Return the rate that an Item is consumed, in items per second.
 
     Mining drills typically only "consume" the resource that they're placed
     on top of, which is equivalent to its output. Typically
@@ -394,15 +396,15 @@ class MiningDrill(Producer):
     Parameters
     ----------
     recipe: Recipe
-        The recipe to examine, usually from Recipe.miningRecipe.
+        The Recipe to examine, usually from Recipe.miningRecipe.
 
     itemName: str, optional
-        The specific recipe product to obtain the consumption rate for. If
+        The specific Recipe product to obtain the consumption rate for. If
         unspecified, assumes the output item as long as it's the only
         product.
 
     count: int, optional
-        The number of identical Producers concurrently crafting this recipe;
+        The number of identical Producers concurrently crafting this Recipe;
         acts as a multiplier. Defaults to one.
     """
     if itemName is None:
@@ -425,10 +427,10 @@ class MiningDrill(Producer):
     Parameters
     ----------
     recipe: Recipe
-        The recipe to examine, usually from Recipe.miningRecipe.
+        The Recipe to examine, usually from Recipe.miningRecipe.
 
     itemName: str, optional
-        The specific recipe ingredient being consumed. If unspecified,
+        The specific Recipe ingredient being consumed. If unspecified,
         assumes the output product as long as it's the only product, since
         the miner consumes from the ground what it produces.
 
@@ -456,10 +458,10 @@ class MiningDrill(Producer):
     Parameters
     ----------
     recipe: Recipe
-        The recipe to base the rates on, usually from Recipe.miningRecipe.
+        The Recipe to base the rates on, usually from Recipe.miningRecipe.
 
     count: int, optional
-        The number of identical Producers concurrently crafting this recipe;
+        The number of identical Producers concurrently crafting this Recipe;
         acts as a multiplier. Defaults to one.
     """
     rateDict = super().rates(recipe, count)
