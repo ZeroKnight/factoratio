@@ -48,8 +48,8 @@ class ItemGroup(abc.MutableMapping):
     for k, v in kwargs.items(): self[k] = v
 
   def __repr__(self):
-    return (f'{self.__class__.__name__}({self.name}, {self.order}, '
-            f'{self.parent}): {self._children!r})')
+    return (f'{self.__class__.__name__}({self.name!r}, {self.order!r}, '
+            f'{self.parent!r})')
 
   def __str__(self):
     return self.name
