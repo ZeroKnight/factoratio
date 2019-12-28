@@ -481,6 +481,151 @@ class BurnerMiningDrill(MiningDrill, BurnerProducer):
   pass
 
 
+class Pumpjack(Producer):
+  """A class representing a Pumpjack.
+
+  Pumpjacks are placed on an oil field and extract crude oil at a constant
+  rate, the amount depending on the field's yield.
+
+  Most methods inherited from Producer have had their behavior modified to
+  suit the Pumpjack's behavior.
+  """
+
+  def productionRate(self, recipe: PumpjackRecipe, currentYield: int,
+                     count: int=1):
+    """Return the rate that a Fluid is produced, in fluid per second.
+
+    The amount of fluid that a Pumpjack returns is dependent on the yield of
+    the field that it is placed on, which is given as a percentage. The
+    amount of fluid pumped per cycle is equal to X times the yield, where X
+    is the base amount of a particular fluid returned from any field. For
+    example, given a yield of 538% and a base amount of 10, one cycle
+    produces 54 fluid.
+
+    Every 1% of yield is equal to 300 cycles, with fields having a minimum
+    yield of 20%. Output is limited to 100 fluid per cycle.
+
+    Parameters
+    ----------
+    recipe: PumpjackRecipe
+        The Recipe to examine.
+
+    currentYield: int
+        The current yield of the field that this Pumpjack is placed on. Given
+        as an integer percentage, e.g. 250 for 250%.
+
+    count: int, optional
+        The number of identical Producers concurrently crafting this Recipe;
+        acts as a multiplier. Defaults to one.
+    """
+    # TODO: Determine if productivity bonus can exceed the 100 cap
+    return (min(currentYield / recipe.baseAmt, 100) * self.productivityMultiplier()
+            * count / self.craft(recipe)['duration'])
+
+  def productionRateInverse(self, recipe: PumpjackRecipe, currentYield: int,
+                            fps: float=1.0) -> float:
+    """Return the number of these Pumpjacks needed to reach the given rate.
+
+    Parameters
+    ----------
+    recipe: Recipe
+        The Recipe to examine.
+
+    currentYield: int
+        The current yield of field that this Pumpjack is placed on. Given as
+        an integer percentage, e.g. 250 for 250%.
+
+    fps: float, optional
+        The target production rate to meet. Defaults to one fluid per second.
+    """
+    return (fps * self.craft(recipe)['duration'] /
+            (min(currentYield / recipe.baseAmt, 100) * self.productivityMultiplier()))
+
+  def consumptionRate(self, recipe: PumpjackRecipe, count: int=1) -> float:
+    """Returns the rate at which 1% of a field's yield is depleted.
+
+    This rate is given per minute, unlike other rates. Each Pumpjack cycle
+    reduces the field's yield by 1% every 300 cycles.
+
+    Parameters
+    ----------
+    recipe: PumpjackRecipe
+        The Recipe to examine.
+
+    count: int, optional
+        The number of identical Producers concurrently crafting this Recipe;
+        acts as a multiplier. Defaults to one.
+    """
+    return 1 / self.craft(recipe)['duration'] / 300 * 60 * count
+
+  def consumptionRateInverse(self, recipe: PumpjackRecipe,
+                             ypm: float=1) -> float:
+    """Return the number of these Pumpjacks needed to reach the given rate.
+
+    Parameters
+    ----------
+    recipe: PumpjackRecipe
+        The recipe to examine.
+
+    ypm: float
+        The desired yield per minute consumed.
+    """
+    return ypm * self.craft(recipe)['duration'] * 300 / 60
+
+  def rates(self, recipe: PumpjackRecipe, count: int=1) -> dict:
+    """Calculate all rates for this Pumpjack.
+
+    Generates a report of every rate associated with this Pumpjack, including
+    energy consumption, pollution generated, yield consumed, field cycles
+    consumed, fluid extracted, and the count of Pumpjacks used.
+
+    Rates are given as units per second, except yield consumption, which is
+    per minute.
+
+    Parameters
+    ----------
+    recipe: Recipe
+        The Recipe to base the rates on, usually from Recipe.miningRecipe.
+
+    count: int, optional
+        The number of identical Producers concurrently crafting this Recipe;
+        acts as a multiplier. Defaults to one.
+    """
+    rateDict = super().rates(recipe, count)
+    rateDict['cycles'] = self.fieldCycleConsumptionRate(recipe, count)
+
+  def fieldCycleConsumptionRate(self, recipe: PumpjackRecipe,
+                                count: int=1) -> float:
+    """Return the rate at which a field's cycles are consumed.
+
+    The rate is given per second. Each Pumpjack cycle reduces the field's
+    yield by 1% every 300 cycles.
+
+    Parameters
+    ----------
+    recipe: Recipe
+        The Recipe to base the rates on, usually from Recipe.miningRecipe.
+
+    count: int, optional
+        The number of identical Producers concurrently crafting this Recipe;
+        acts as a multiplier. Defaults to one.
+    """
+    return self.craftSpeed * self.speedMultiplier() / recipe.time * count
+
+
+base = {
+  'Assembler1': Producer('Assembling machine', 0.5, 0, Watt('75k'), Watt('2.5k'), 4),
+  'Assembler2': Producer('Assembling machine 2', 0.75, 2, Watt('150k'), Watt('5k'), 3),
+  'Assembler3': Producer('Assembling machine 3', 1.25, 4, Watt('375k'), Watt('12.5k'), 2),
+  'BurnDrill': BurnerMiningDrill('Burner mining drill', 0.25, 0, Watt('150k'), 0, 12),
+  'ElecDrill': MiningDrill('Electric mining drill', 0.5, 3, Watt('90k'), 0, 10),
+  'StoneFurance': BurnerProducer('Stone furnace', 1, 0, Watt('90k'), 0, 2),
+  'SteelFurance': BurnerProducer('Steel furnace', 2, 0, Watt('90k'), 0, 4),
+  'ElecFurance': Producer('Electric furnace', 2, 2, Watt('180k'), Watt('6k'), 1),
+  'ChemPlant': Producer('Chemical plant', 1, 3, Watt('210k'), Watt('7k'), 4),
+  'Pumpjack': Pumpjack('Pumpjack', 1, 2, Watt('90k'), 0, 10)
+}
+
 # TODO: Find a place for these prototype functions
 
 # def forgesGivenMiners(miners: int, craft: Craft) -> int:

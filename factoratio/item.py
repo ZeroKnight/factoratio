@@ -192,9 +192,6 @@ class Recipe():
 
   Attributes
   ----------
-  input_, output: List of Ingredients
-      List of Ingredients for recipe input and output.
-
   time: float
       The time for the recipe to complete. Modified by a Producer's crafting
       speed.
@@ -289,3 +286,29 @@ class Recipe():
       if ingredient.what.name == name:
         return ingredient
     return None
+
+
+class PumpjackRecipe(Recipe):
+  """A class representing a Fluid extracted by a Pumpjack.
+
+  Pumpjacks extract fluids from spots on the map called "fields". Each field
+  has a specific yield, which acts as a multiplier for how much fluid is
+  returned every pump cycle.
+
+  Attributes
+  ----------
+  time: float
+      The time for the Recipe to complete. Modified by a Producer's crafting
+      speed.
+
+  output: Ingredient
+      The Fluid returned by this Recipe.
+
+  baseAmt: float
+      The base amount of the output Fluid per cycle. This is multiplied by the
+      field's yield to get the final output amount per cycle.
+  """
+
+  def __init__(self, time: float, output: Ingredient, baseAmt: float):
+    super().__init__(time, [], output)
+    self.baseAmt = baseAmt
