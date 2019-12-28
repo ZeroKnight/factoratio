@@ -448,9 +448,11 @@ class MiningDrill(Producer):
   def rates(self, recipe: Recipe, count: int=1) -> dict:
     """Calculate all rates for this Producer.
 
-    Generates a report of every rate associated with this Producer, such as
+    Generates a report of every rate associated with this Producer, including
     energy consumption, pollution generated, individual items consumed and
-    produced, etc.
+    produced, and the count of Producers used.
+
+    Rates are given as units per second.
 
     For mining drills, the "consumption" is the same as its production unless
     it has extra inputs or outputs.
